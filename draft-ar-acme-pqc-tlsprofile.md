@@ -87,3 +87,7 @@ Historically, the industry has successfully transitioned between cryptographic p
        slower.
 
 --- back
+
+# Acknowledgements
+
+This draft leverages text from {{RFC8737}} and {{?I-D.reddy-uta-pqc-app}}.
