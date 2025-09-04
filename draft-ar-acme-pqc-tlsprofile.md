@@ -54,6 +54,10 @@ normative:
     RFC4648:
     RFC4086:
     RFC6066:
+    FIPS180-4:
+        title: "FIPS180-4: Secure Hash Standard (SHS)"
+        target: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+    
 
 
 --- abstract
@@ -122,12 +126,12 @@ The client prepares for validation by constructing a self-signed certificate tha
 
    id-pe-acmeIdentifier OBJECT IDENTIFIER ::=  { id-pe 31 }
 
-   The extension has the following ASN.1 {{X.680}} format :
+   The extension has the following ASN.1 [X.680] format :
 
    Authorization ::= OCTET STRING (SIZE (32))
 
    The extnValue of the id-pe-acmeIdentifier extension is the ASN.1 DER
-   encoding {{X.690}} of the Authorization structure, which contains the
+   encoding [X.690] of the Authorization structure, which contains the
    SHA-256 digest of the key authorization for the challenge.
 
 Once this certificate has been created, it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
