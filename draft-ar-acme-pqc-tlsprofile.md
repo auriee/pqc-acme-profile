@@ -103,7 +103,7 @@ Historically, the industry has successfully transitioned between cryptographic p
 # Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 {{RFC2119}} {{RFC8174}} when, and only when, they appear in all capitals, as shown here.
- This document also adopts terminology defined in {{RFC9794}}.
+This document also adopts terminology defined in {{RFC9794}}.
 
 # PQC TLS with ALPN Challenge
 
@@ -119,7 +119,7 @@ The tls-alpn-02 ACME challenge object has the following format:
       characters MUST be stripped.  See {{RFC4086}} for additional
       information on randomness requirements.
 
-The client prepares for validation by constructing a self-signed certificate that MUST contain an acmeIdentifier extension and a subjectAlternativeName extension {{RFC5280}}.  The subjectAlternativeName extension MUST contain a single dNSName entry where the value is the domain name being validated.  The acmeIdentifier extension MUST contain the SHA-256 digest [FIPS180-4] of the key authorization {{RFC8555}} for the challenge.  The acmeIdentifier extension MUST be critical so that the certificateisn't inadvertently used by non-ACME software.
+The client prepares for validation by constructing a self-signed certificate that MUST contain an acmeIdentifier extension and a subjectAlternativeName extension {{RFC5280}}.  The subjectAlternativeName extension MUST contain a single dNSName entry where the value is the domain name being validated.  The acmeIdentifier extension MUST contain the SHA-256 digest {{FIPS180-4}} of the key authorization {{RFC8555}} for the challenge.  The acmeIdentifier extension MUST be critical so that the certificateisn't inadvertently used by non-ACME software.
 
    The acmeIdentifier extension is identified by the id-pe-
    acmeIdentifier object identifier (OID) in the id-pe arc {{RFC5280}}:
@@ -183,7 +183,7 @@ A client responds by POSTing an empty JSON object ({}) to the challenge URL to a
        being validated during the TLS handshake.
 
    4.  The ACME server verifies that during the TLS handshake the
-       application-layer protocol "acme-tls/1" was successfully
+       application-layer protocol "acme-tls/2" was successfully
        negotiated (and that the ALPN extension contained only the value
        "acme-tls/2") and that the certificate returned contains:
 
@@ -198,7 +198,10 @@ A client responds by POSTing an empty JSON object ({}) to the challenge URL to a
    If all of the above steps succeed, then the validation is successful. Otherwise, it fails.
 
 # acme-tls/2 definition
-The "acme-tls/2" protocol MUST only be used for validating ACME tls-alpn-02 challenges.  The protocol consists of a TLS handshake in which the required validation information is transmitted.  The "acme-tls/2" protocol does not carry application data.  Once the handshake is completed, the client MUST NOT exchange any further data with the server and MUST immediately close the connection.  While this protocol uses X.509 certificates, it does not use the authentication method described in {{RFC5280}} and, as such, does not require a valid signature on the provided certificate nor require the TLS handshake to complete successfully.  An ACME server may wish to use an off-the-shelf TLS stack where it is not simple to allow these divergences in the protocol as defined.  Because of this, an ACME server MAY choose to withhold authorization if either the certificate signature is invalid or the handshake doesn't fully complete. ACME servers that implement "acme-tls/2" MUST only negotiate TLS 1.3 {{RFC8446}} only when connecting to clients for validation as TLS 1.3 has support for PQC certificates.
+
+The "acme-tls/2" protocol MUST only be used for validating ACME tls-alpn-02 challenges.  The protocol consists of a TLS handshake in which the required validation information is transmitted.  The "acme-tls/2" protocol does not carry application data.  Once the handshake is completed, the client MUST NOT exchange any further data with the server and MUST immediately close the connection.  While this protocol uses X.509 certificates, it does not use the authentication method described in {{RFC5280}} and, as such, does not require a valid signature on the provided certificate nor require the TLS handshake to complete successfully.
+
+An ACME server may wish to use an off-the-shelf TLS stack where it is not simple to allow these divergences in the protocol as defined.  Because of this, an ACME server MAY choose to withhold authorization if either the certificate signature is invalid or the handshake doesn't fully complete. ACME servers that implement "acme-tls/2" MUST only negotiate TLS 1.3 {{RFC8446}} only when connecting to clients for validation as TLS 1.3 has support for PQC certificates.
 
 # IANA Considerations
 
