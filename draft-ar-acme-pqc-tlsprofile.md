@@ -53,6 +53,7 @@ normative:
     RFC8174:
     RFC4648:
     RFC4086:
+    RFC6066:
 
 
 --- abstract
@@ -103,7 +104,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 # PQC TLS with ALPN Challenge
 
 The TLS with Application-Layer Protocol Negotiation (TLS ALPN) validation method proves control over a domain name by requiring the ACME client to configure a TLS server to respond to specific connection attempts using the ALPN extension with identifying information.  The ACME server validates control of the domain name by connecting to a TLS server at one of the addresses resolved for the domain name and verifying that a certificate with specific content is presented.
-The tls-alpn-01 ACME challenge object has the following format:
+The tls-alpn-02 ACME challenge object has the following format:
 
    type (required, string):  The string "tls-alpn-02"
 
@@ -121,31 +122,42 @@ The client prepares for validation by constructing a self-signed certificate tha
 
    id-pe-acmeIdentifier OBJECT IDENTIFIER ::=  { id-pe 31 }
 
-   The extension has the following ASN.1 [X.680] format :
+   The extension has the following ASN.1 {{X.680}} format :
 
    Authorization ::= OCTET STRING (SIZE (32))
 
    The extnValue of the id-pe-acmeIdentifier extension is the ASN.1 DER
-   encoding [X.690] of the Authorization structure, which contains the
+   encoding {{X.690}} of the Authorization structure, which contains the
    SHA-256 digest of the key authorization for the challenge.
 
-Once this certificate has been created, it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension [RFC6066] has been provided containing the domain name being validated.
+Once this certificate has been created, it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
 
 A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server.  The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
 
    POST /acme/authz/1234/2
+
    Host: example.com
+   
    Content-Type: application/jose+json
 
    {
+     
      "protected": base64url({
+       
        "alg": "ML-DSA44",
+
        "kid": "https://example.com/acme/acct/1",
+       
        "nonce": "JHb54aT_KTXBWQOzGYkt9A",
+       
        "url": "https://example.com/acme/authz/1234/1"
+     
      }),
+     
      "payload": base64url({}),
+     
      "signature": "Q1bURgJoEslbD1c5...3pYdSMLio57mQNN4"
+   
    }
 
    On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key.
