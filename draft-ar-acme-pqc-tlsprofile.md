@@ -201,7 +201,7 @@ A client responds by POSTing an empty JSON object ({}) to the challenge URL to a
 
 The "acme-tls/2" protocol MUST only be used for validating ACME tls-alpn-02 challenges.  The protocol consists of a TLS handshake in which the required validation information is transmitted.  The "acme-tls/2" protocol does not carry application data.  Once the handshake is completed, the client MUST NOT exchange any further data with the server and MUST immediately close the connection.  While this protocol uses X.509 certificates, it does not use the authentication method described in {{RFC5280}} and, as such, does not require a valid signature on the provided certificate nor require the TLS handshake to complete successfully.
 
-An ACME server may wish to use an off-the-shelf TLS stack where it is not simple to allow these divergences in the protocol as defined.  Because of this, an ACME server MAY choose to withhold authorization if either the certificate signature is invalid or the handshake doesn't fully complete. ACME servers that implement "acme-tls/2" MUST only negotiate TLS 1.3 {{RFC8446}} only when connecting to clients for validation as TLS 1.3 has support for PQC certificates.
+An ACME server may wish to use an off-the-shelf TLS stack where it is not simple to allow these divergences in the protocol as defined.  Because of this, an ACME server MAY choose to withhold authorization if either the certificate signature is invalid or the handshake doesn't fully complete. ACME servers that implement "acme-tls/2" MUST only negotiate TLS 1.3 {{RFC8446}} only when connecting to clients for validation as TLS 1.3 has support for post quantum enhancements.
 
 # IANA Considerations
 
