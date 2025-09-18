@@ -269,7 +269,7 @@ To mitigate such attacks, several steps need to be taken:
 1. Revocation and Transition: Both clients and servers that use traditional certificates will have to revoke them and migrate to PQC authentication.
 2. Client-Side Verification:  Clients should avoid establishing TLS sessions with servers that do not support PQC authentication
 3. Server-Side Verification: Server should avoid establishing JSON based certificate sessions from clients that do not support quantum safe JWS/JWK authentication
-3. PKI Migration: Organizations should transition their PKI to post-quantum-safe certification authorities and discontinue issuing certificates based on traditional cryptographic methods.
+4. PKI Migration: Organizations should transition their PKI to post-quantum-safe certification authorities and discontinue issuing certificates based on traditional cryptographic methods.
 
 # IANA Considerations
 
