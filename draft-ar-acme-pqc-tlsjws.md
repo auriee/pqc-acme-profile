@@ -211,36 +211,36 @@ The "alg" algorithm can be any of the following tables based on the requirements
 
 For ML-DSA based JSON Web Signatures:
 
-   +===========+===========+=========================+
-   | Name      | value     | Description             |
-   +===========+===========+=========================+
-   | ML-DSA-44 | ML-DSA-44 | JSON Web Signature      |
-   |           |           | Algorithm for ML-DSA-44 |
-   +-----------+-----------+-------------------------+
-   | ML-DSA-65 | ML-DSA-65 | JSON Web Signature      |
-   |           |           | Algorithm for ML-DSA-65 |
-   +-----------+-----------+-------------------------+
-   | ML-DSA-87 | ML-DSA-87 | JSON Web Signature      |
-   |           |           | Algorithm for ML-DSA-87 |
-   +-----------+-----------+-------------------------+
++===========+===========+=========================+
+| Name      | value     | Description             |
++===========+===========+=========================+
+| ML-DSA-44 | ML-DSA-44 | JSON Web Signature      |
+|           |           | Algorithm for ML-DSA-44 |
++-----------+-----------+-------------------------+
+| ML-DSA-65 | ML-DSA-65 | JSON Web Signature      |
+|           |           | Algorithm for ML-DSA-65 |
++-----------+-----------+-------------------------+
+| ML-DSA-87 | ML-DSA-87 | JSON Web Signature      |
+|           |           | Algorithm for ML-DSA-87 |
++-----------+-----------+-------------------------+
 
 For SLH-DSA based JSON Web Signatures:
 
-   +====================+====================+====================+
-   | Name               | alg                | Description        |
-   +====================+====================+====================+
-   | SLH-DSA-SHA2-128s  | SLH-DSA-SHA2-128s  | JSON Web Signature |
-   |                    |                    | Algorithm for SLH- |
-   |                    |                    | DSA-SHA2-128s      |
-   +--------------------+--------------------+--------------------+
-   | SLH-DSA-SHAKE-128s | SLH-DSA-SHAKE-128s | JSON Web Signature |
-   |                    |                    | Algorithm for SLH- |
-   |                    |                    | DSA-SHAKE-128s     |
-   +--------------------+--------------------+--------------------+
-   | SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature |
-   |                    |                    | Algorithm for SLH- |
-   |                    |                    | DSA-SHA2-128f      |
-   +--------------------+--------------------+--------------------+
++====================+====================+====================+
+| Name               | alg                | Description        |
++====================+====================+====================+
+| SLH-DSA-SHA2-128s  | SLH-DSA-SHA2-128s  | JSON Web Signature |
+|                    |                    | Algorithm for SLH- |
+|                    |                    | DSA-SHA2-128s      |
++--------------------+--------------------+--------------------+
+| SLH-DSA-SHAKE-128s | SLH-DSA-SHAKE-128s | JSON Web Signature |
+|                    |                    | Algorithm for SLH- |
+|                    |                    | DSA-SHAKE-128s     |
++--------------------+--------------------+--------------------+
+| SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature |
+|                    |                    | Algorithm for SLH- |
+|                    |                    | DSA-SHA2-128f      |
++--------------------+--------------------+--------------------+
    
    
 On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key.
