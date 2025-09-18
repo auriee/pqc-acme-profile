@@ -1,9 +1,9 @@
 ---
-title: "Post Quantum Enhancments in ACME TLS profile"
-abbrev: "PQC TLS profile in ACME"
+title: "Post Quantum Enhancments in ACME profile"
+abbrev: "PQC profile in ACME"
 category: std
 
-docname: draft-ar-acme-pqc-tlsprofile-00
+docname: draft-ar-acme-pqc-tlsjws-00
 submissiontype: IETF
 number:
 date:
