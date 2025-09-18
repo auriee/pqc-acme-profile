@@ -71,7 +71,7 @@ This draft aims to enhance the security of ACME TLS protocol by defining TLS 1.3
 
 The Automatic Certificate Management Environment (ACME) {{RFC8555}} specification describes methods for validating control of domain names via HTTP and DNS.  Deployment experience has shown it is also useful to be able to validate domain control using the TLS layer alone.  In particular, this allows hosting providers, Content Distribution Networks (CDNs), and TLS-terminating load balancers to validate domain control without modifying the HTTP handling behavior of their backends as explained in {{RFC8737}}.
 
-When using protocols such as TLS 1.3 {{RFC8446}}, DTLS 1.3 {{RFC9147}}, or protocols built on these foundations like ACME {{RFC8555}}, clients and servers perform ephemeral public-key exchanges, such as Elliptic Curve Diffie-Hellman (ECDH), to derive a shared secret that ensures forward secrecy. Additionally, they validate each other's identities through X.509 certificates, establishing secure communication. The emergence of a Cryptographically Relevant Quantum Computer (CRQC) would render current public-key algorithms insecure and obsolete. This is because the mathematical assumptions underpinning these algorithms, which currently offer high levels of security, would no longer hold in the presence of a CRQC.  Consequently, there is an urgent need to update protocols and infrastructure with post-quantum cryptographic (PQC) algorithms.  These algorithms are designed to remain secure against both CRQCs and classical computers. The traditional cryptographic primitives requiring replacement are discussed in {{?I-D.ietf-pquip-pqc-engineers}}, and the NIST PQC Standardization process has selected algorithms such as ML-KEM, SLH-DSA, and ML-DSA as candidates for future deployment in protocols.
+When using protocols such as TLS 1.3 {{RFC8446}}, DTLS 1.3 {{RFC9147}}, or protocols built on these foundations like ACME {{RFC8555}}, clients and servers perform ephemeral public-key exchanges, such as Elliptic Curve Diffie-Hellman (ECDH), to derive a shared secret that ensures forward secrecy. Additionally, they validate each other's identities through X.509 certificates, establishing secure communication. The emergence of a Cryptographically Relevant Quantum Computers (CRQCs) would render current public-key algorithms insecure and obsolete. This is because the mathematical assumptions underpinning these algorithms, which currently offer high levels of security, would no longer hold in the presence of a CRQC.  Consequently, there is an urgent need to update protocols and infrastructure with post-quantum cryptographic (PQC) algorithms.  These algorithms are designed to remain secure against both CRQCs and classical computers. The traditional cryptographic primitives requiring replacement are discussed in {{?I-D.ietf-pquip-pqc-engineers}}, and the NIST PQC Standardization process has selected algorithms such as ML-KEM, SLH-DSA, and ML-DSA as candidates for future deployment in protocols.
 
 Historically, the industry has successfully transitioned between cryptographic protocols, such as upgrading TLS versions and deprecating older ones (e.g., SSLv2), and shifting from RSA to Elliptic Curve Cryptography (ECC), which improved security and reduced key sizes.  However, the transition to PQC presents unique challenges, primarily due to the following:
 
@@ -104,6 +104,32 @@ Historically, the industry has successfully transitioned between cryptographic p
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 {{RFC2119}} {{RFC8174}} when, and only when, they appear in all capitals, as shown here.
 This document also adopts terminology defined in {{RFC9794}}.
+
+# Authentication
+
+Although CRQCs could potentially decrypt past TLS sessions, client/server authentication based on certificates cannot be retroactively compromised. However, the multi-year process required to establish, certify, and embed new root CAs presents a significant challenge. If CRQCs emerge earlier than anticipated, responding promptly to secure authentication systems would be difficult. While the migration to PQ X.509 certificates allows for more time compared to key exchanges, delaying these preparations should be avoided.
+
+## Quantum-Ready Authentication
+
+The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols. For example, if an attacker determines the private key of a server certificate before its expiration, they could impersonate the server, causing users to believe their connections are legitimate. This impersonation leads to serious security threats, including unauthorized data disclosure, interception of communications, and overall system compromise.
+
+The quantum-ready authentication property ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate:
+
+## Post-Quantum X.509 Certificates
+
+Post-quantum certificates contain only a PQC public key and are signed using a post-quantum algorithm. They are suitable for deployments capable of fully embracing post-quantum cryptography.
+
+  * ML-DSA Certificates: Defined in {{!I-D.ietf-lamps-dilithium-certificates}}, these use the Module-Lattice Digital Signature Algorithm (ML-DSA). {{!I-D.tls-westerbaan-mldsa}} explains how ML-DSA is applied for authentication in TLS 1.3.
+  * SLH-DSA Certificates: Defined in {{!I-D.ietf-lamps-x509-slhdsa}}, these use the SLH-DSA algorithm. {{!I-D.reddy-tls-slhdsa}} details how SLH-DSA is used in TLS 1.3 and compares its advantages and disadvantages with ML-DSA in Section 2 of the document.
+
+## Post-Quantum JSON Web Signatures (JWS)
+
+Communications between an ACME client and an ACME server are done over HTTPS, using JSON Web Signature (JWS) [RFC7515] to provide some additional security properties for messages sent from the client to the server.
+
+  * ML-DSA JWS: Defined in {{?I-D.ietf-cose-dilithium-09}}, these employ ML-DSA updates to JWS updates to quantum safe JOSE signatures. ACME needs to meet the requirements and updates to JWS to generate quantum safe signatures over HTTPS using JSON.
+  * SLH-DSA JWS: Defined in {{?I-D.ietf-cose-sphincs-plus-05}}, these employ SLH-DSA updates to JWS updates to quantum safe JOSE signatures. ACME needs to meet the requirements and updates to JWS to generate quantum safe signatures over HTTPS using JSON.
+
+ACME needs to either leverage ML-DSA or SLH-DSA specifications for JWS instead of RFC7515 for quantum safe signatures and message transport.
 
 # PQC TLS with ALPN Challenge
 
