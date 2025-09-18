@@ -150,6 +150,7 @@ ACME needs to either leverage ML-DSA or SLH-DSA specifications for JWS instead o
 # PQC TLS with ALPN Challenge
 
 The TLS with Application-Layer Protocol Negotiation (TLS ALPN) validation method proves control over a domain name by requiring the ACME client to configure a TLS server to respond to specific connection attempts using the ALPN extension with identifying information.  The ACME server validates control of the domain name by connecting to a TLS server at one of the addresses resolved for the domain name and verifying that a certificate with specific content is presented.
+
 The tls-alpn-02 ACME challenge object has the following format:
 
    type (required, string):  The string "tls-alpn-02"
@@ -178,7 +179,7 @@ The client prepares for validation by constructing a self-signed certificate tha
 
 Once this certificate has been created, it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
 
-A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server.  The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
+A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server. The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
 
    POST /acme/authz/1234/2
 
@@ -206,7 +207,43 @@ A client responds by POSTing an empty JSON object ({}) to the challenge URL to a
    
    }
 
-   On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key.
+The "alg" algorithm can be any of the following tables based on the requirements and security level desired as defined {{?I-D.ietf-pquip-pqc-engineers}}.
+
+For ML-DSA based JSON Web Signatures:
+
+   +===========+===========+=========================+
+   | Name      | value     | Description             |
+   +===========+===========+=========================+
+   | ML-DSA-44 | ML-DSA-44 | JSON Web Signature      |
+   |           |           | Algorithm for ML-DSA-44 |
+   +-----------+-----------+-------------------------+
+   | ML-DSA-65 | ML-DSA-65 | JSON Web Signature      |
+   |           |           | Algorithm for ML-DSA-65 |
+   +-----------+-----------+-------------------------+
+   | ML-DSA-87 | ML-DSA-87 | JSON Web Signature      |
+   |           |           | Algorithm for ML-DSA-87 |
+   +-----------+-----------+-------------------------+
+
+For SLH-DSA based JSON Web Signatures:
+
+   +====================+====================+====================+
+   | Name               | alg                | Description        |
+   +====================+====================+====================+
+   | SLH-DSA-SHA2-128s  | SLH-DSA-SHA2-128s  | JSON Web Signature |
+   |                    |                    | Algorithm for SLH- |
+   |                    |                    | DSA-SHA2-128s      |
+   +--------------------+--------------------+--------------------+
+   | SLH-DSA-SHAKE-128s | SLH-DSA-SHAKE-128s | JSON Web Signature |
+   |                    |                    | Algorithm for SLH- |
+   |                    |                    | DSA-SHAKE-128s     |
+   +--------------------+--------------------+--------------------+
+   | SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature |
+   |                    |                    | Algorithm for SLH- |
+   |                    |                    | DSA-SHA2-128f      |
+   +--------------------+--------------------+--------------------+
+   
+   
+On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key.
 
    The server then verifies the client's control over the domain by verifying that the TLS server was configured as expected using the following steps:
 
