@@ -127,6 +127,10 @@ Although CRQCs could potentially decrypt past TLS sessions, client/server authen
 
 ## Quantum-Ready Authentication
 
+For data authentication, the concern shifts to potential on-path attackers equipped with CRQCs capable of breaking certificate-based authentication mechanisms that rely on traditional algorithms.  Such attackers could impersonate legitimate entities, tricking victims into connecting to the attacker’s device instead of the intended target, resulting in impersonation attacks. 
+
+While this is not as immediate a threat as "Harvest Now, Decrypt Later" attacks, it remains a significant risk that must be addressed proactively. In client/server certificate-based authentication, the security window between the generation of the signature in the CertificateVerify message and its verification by the peer during the TLS handshake is typically short.  However, the security lifetime of digital signatures on X.509 certificates, including those issued by root Certification Authorities (CAs), warrants closer scrutiny.  Root CA certificates can have validity periods of 20 years or more, while root Certificate Revocation Lists (CRLs) often remain valid for a year or longer.  Delegated credentials, such as CRL Signing Certificates or OCSP response signing certificates, generally have shorter lifetimes but still present a potential vulnerability window.
+
 The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols. For example, if an attacker determines the private key of a server certificate before its expiration, they could impersonate the server, causing users to believe their connections are legitimate. This impersonation leads to serious security threats, including unauthorized data disclosure, interception of communications, and overall system compromise.
 
 The quantum-ready authentication property ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
