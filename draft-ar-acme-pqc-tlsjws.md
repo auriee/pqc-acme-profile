@@ -151,7 +151,7 @@ The quantum-ready authentication property becomes critical in scenarios where an
 The quantum-ready authentication property ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
 
 ~~~~~ aasvg
-Client                                                        Server
+          Client                                              Server
 
          [Contact Information]
          [ToS Agreement]
