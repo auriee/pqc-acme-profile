@@ -121,11 +121,26 @@ For the purposes of this document, it is useful to categorize cryptographic algo
 
 Digital signature algorithms play a critical role in X.509 certificates, Certificate Transparency Signed Certificate Timestamps, Online Certificate Status Protocol (OCSP) statements, remote attestation evidence, and any other mechanism that contributes signatures during a TLS handshake or in context of a secure communication establishment.
 
-# Authentication
+# Data Confidentiality for TLS in ACME
+
+One of the primary threats to TLS in ACME is the HNDL (Harvest Now Decyrpt Later) attack. In this scenario, adversaries can passively capture TLS handshakes such as those transmitted over the air in Wi-Fi networks and store them for future decryption once CRQCs become available.
+
+If the handshake is not quantum-resistant, a future CRQC could retroactively decrypt session traffic, revealing:
+
+* The identity of the authenticated client.
+
+* Client credentials used in certificate-based authentication (e.g., usernames, device or organization identifiers).
+
+* Session-specific metadata that may aid surveillance or profiling, such as cipher suites and TLS extensions supported. These elements can help to fingerprint devices, or correlate ACME TLS sessions over time.
+
+To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME TLS deployments MUST adopt post-quantum key exchange mechanisms, as outlined in Section 4 of [I-D.reddy-uta-pqc-app]. These mechanisms ensure that even if handshake data is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
+
+Furthermore, to support hybrid or PQC-only key exchange in bandwidth or latency-constrained ACME deployments, ACME clients and servers should apply the optimizations described in Section 4.1 of [I-D.reddy-uta-pqc-app] to minimize performance overhead.
+
+
+# Quantum-Ready Authentication
 
 Although CRQCs could potentially decrypt past TLS sessions, client/server authentication based on certificates cannot be retroactively compromised. However, the multi-year process required to establish, certify, and embed new root CAs presents a significant challenge. If CRQCs emerge earlier than anticipated, responding promptly to secure authentication systems would be difficult. While the migration to PQ X.509 certificates allows for more time compared to key exchanges, delaying these preparations should be avoided.
-
-## Quantum-Ready Authentication
 
 For data authentication, the concern shifts to potential on-path attackers equipped with CRQCs capable of breaking certificate-based authentication mechanisms that rely on traditional algorithms.  Such attackers could impersonate legitimate entities, tricking victims into connecting to the attacker’s device instead of the intended target, resulting in impersonation attacks. 
 
@@ -134,6 +149,27 @@ While this is not as immediate a threat as "Harvest Now, Decrypt Later" attacks,
 The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols. For example, if an attacker determines the private key of a server certificate before its expiration, they could impersonate the server, causing users to believe their connections are legitimate. This impersonation leads to serious security threats, including unauthorized data disclosure, interception of communications, and overall system compromise.
 
 The quantum-ready authentication property ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
+
+~~~~~ aasvg
+Client                                                        Server
+
+         [Contact Information]
+         [ToS Agreement]
+         [Additional Data]
+         Signature                     ------->
+                                                             Account URL
+                                       <-------           Account Object
+
+
+                   [] Information covered by request signatures
+~~~~~
+{: #tab-acme-pqc title="Account Creation"}
+
+The TLS handshake MUST negotiate a PQC-only or hybrid key exchange. The client’s JWS signature MUST be computed using a PQC-only or composite signature algorithm. Any fallback to classical-only TLS or signature mechanisms MUST be rejected by the server.
+
+ACME servers MUST implement TLS 1.3 with support for PQC-only or hybrid key exchanges (e.g., X25519+Kyber768) and MUST NOT permit fallback to TLS 1.2 or below for certificate-management transactions. ACME servers that support 0-RTT MAY allow clients to send early data, provided that: The session resumption ticket and key exchange are derived from a quantum-resistant handshake. The ACME request includes nonce-based replay protection (Section 6.5 of RFC 8555). If these conditions are not met, clients MUST avoid using 0-RTT.
+
+An ACME server MUST support at least one PQC-only or composite signature algorithm for signing and verifying JWS objects.
 
 ## Post-Quantum X.509 Certificates
 
@@ -150,6 +186,20 @@ Communications between an ACME client and an ACME server are done over HTTPS, us
   * SLH-DSA JWS: Defined in Section 3 of {{?I-D.ietf-cose-sphincs-plus-05}}, these employ SLH-DSA updates to JWS updates to quantum safe JOSE signatures. ACME needs to meet the requirements and updates to JWS to generate quantum safe signatures over HTTPS using JSON.
 
 ACME needs to either leverage ML-DSA or SLH-DSA specifications for JWS instead of RFC7515 for quantum safe signatures and message transport.
+
+## DNSSEC with PQC Signatures
+
+When the DNS-01 challenge type is used, the validation chain SHOULD rely on DNSSEC records signed using PQC-only or composite signature algorithms. CAs and ACME servers SHOULD reject DNSSEC validations that depend solely on RSA or ECDSA algorithms without PQC augmentation, as these signatures will be vulnerable once CRQCs are available.
+
+ACME servers MAY publish policy metadata in their directory object indicating which DNSSEC algorithms are acceptable.
+
+## URLs with PQC
+
+The URLs used in ACME needs to use PQC-only or hybrid key exchange and PQC-only or composite signatures. All URLs provided by the ACME directory (e.g., newAccount, newOrder, revokeCert) MUST be accessible over HTTPS endpoints that:
+ 
+* Negotiate PQC-only or hybrid key exchange mechanisms;
+ 
+* Authenticate using PQC-only or composite signatures in the server’s TLS certificate chain; Present a server certificate whose key material is quantum-safe or composite (e.g., X25519+Kyber, Ed25519+ML-DSA).
 
 # PQC TLS with ALPN Challenge
 
