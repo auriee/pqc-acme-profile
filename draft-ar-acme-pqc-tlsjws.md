@@ -61,9 +61,9 @@ normative:
 
 
 --- abstract
-ACME TLS {{RFC8737}} leverages TLS 1.2 that employs the traditional Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) key agreement algorithm for domain control validation. However, TLS 1.2 it is susceptible to future threats from Cryptographically Relevant Quantum Computers, which could potentially compromise a traditional ephemeral public key. If the adversary has also obtained knowledge of the long-term key and ephemeral public key, it could compromise session keys generated as part of the authentication run in ACME.
+ACME {{8555}} leverages TLS 1.2, JWS signatures primarily for authentication and signature generation that employs the traditional Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) key agreement algorithm for domain control validation. However, TLS 1.2 as well as current JWS signatures is susceptible to future threats from Cryptographically Relevant Quantum Computers, which could potentially compromise a traditional ephemeral public key. If the adversary has also obtained knowledge of the long-term key and ephemeral public key, it could compromise session keys generated as part of the authentication run in ACME.
 
-This draft aims to enhance the security of ACME TLS protocol by defining TLS 1.3 PQC profile to make it quantum-safe {{RFC8737}}.
+This draft aims to enhance the security of ACME protocol by defining TLS 1.3 and JWS PQC profile for ACME to make it quantum-safe {{RFC8555}}.
 
 --- middle
 
@@ -73,32 +73,7 @@ The Automatic Certificate Management Environment (ACME) {{RFC8555}} specificatio
 
 When using protocols such as TLS 1.3 {{RFC8446}}, DTLS 1.3 {{RFC9147}}, or protocols built on these foundations like ACME {{RFC8555}}, clients and servers perform ephemeral public-key exchanges, such as Elliptic Curve Diffie-Hellman (ECDH), to derive a shared secret that ensures forward secrecy. Additionally, they validate each other's identities through X.509 certificates, establishing secure communication. The emergence of a Cryptographically Relevant Quantum Computers (CRQCs) would render current public-key algorithms insecure and obsolete. This is because the mathematical assumptions underpinning these algorithms, which currently offer high levels of security, would no longer hold in the presence of a CRQC.  Consequently, there is an urgent need to update protocols and infrastructure with post-quantum cryptographic (PQC) algorithms.  These algorithms are designed to remain secure against both CRQCs and classical computers. The traditional cryptographic primitives requiring replacement are discussed in {{?I-D.ietf-pquip-pqc-engineers}}, and the NIST PQC Standardization process has selected algorithms such as ML-KEM, SLH-DSA, and ML-DSA as candidates for future deployment in protocols.
 
-Historically, the industry has successfully transitioned between cryptographic protocols, such as upgrading TLS versions and deprecating older ones (e.g., SSLv2), and shifting from RSA to Elliptic Curve Cryptography (ECC), which improved security and reduced key sizes.  However, the transition to PQC presents unique challenges, primarily due to the following:
-
-   1.  Algorithm Maturity: While NIST has finalized a set of PQC
-       algorithms, ensuring the correctness and security of
-       implementations remains critical.  Even the most secure algorithm
-       is vulnerable if implementation flaws introduce security risks.
-
-   2.  Key and Signature Sizes: Many PQC algorithms require
-       significantly larger key and signature sizes, which can inflate
-       handshake packet sizes and impact network performance.  For
-       example, ML-KEM public keys are substantially larger than ECDH
-       keys (see Table 5 in {{?I-D.ietf-pquip-pqc-engineers}}). Similarly,
-       public keys for SLH-DSA and ML-DSA are much larger than those for
-       P256 (see Table 6 in {{?I-D.ietf-pquip-pqc-engineers}}). Signature
-       sizes for algorithms like SLH-DSA and ML-DSA are also
-       considerably larger compared to traditional options like Ed25519
-       or ECDSA-P256, posing challenges for constrained environments
-       (e.g., IoT) and increasing handshake times in high-latency or
-       lossy networks.
-
-   3.  Performance Trade-Offs: While some PQC algorithms exhibit slower
-       operations compared to traditional algorithms, others provide
-       specific advantages.  For instance, ML-KEM requires less CPU than
-       X25519, and ML-DSA offers faster signature verification times
-       compared to Ed25519, although its signature generation process is
-       slower.
+Historically, the industry has successfully transitioned between cryptographic protocols, such as upgrading TLS versions and deprecating older ones (e.g., SSLv2), and shifting from RSA to Elliptic Curve Cryptography (ECC), which improved security and reduced key sizes.  However, the transition to PQC presents a unique challenge, primarily due to the Algorithm Maturity; while NIST has finalized a set of PQC algorithms, ensuring the correctness and security of implementations remains critical.  Even the most secure algorithm is vulnerable if implementation flaws introduce security risks.
 
 Any application transmitting messages over untrusted networks is potentially vulnerable to active or passive attacks by adversaries, including those equipped with CRQCs. The degree of vulnerability varies depending on the application, the underlying systems, the value of the data being transmitted, and the attractiveness of attacking a particular individual, device, or flow. This document outlines quantum-ready usage profiles for applications designed to protect against passive and on-path attacks leveraging CRQCs.
 
@@ -123,20 +98,19 @@ Digital signature algorithms play a critical role in X.509 certificates, Certifi
 
 # Data Confidentiality for TLS in ACME
 
-One of the primary threats to TLS in ACME is the HNDL (Harvest Now Decyrpt Later) attack. In this scenario, adversaries can passively capture TLS handshakes such as those transmitted over the air in Wi-Fi networks and store them for future decryption once CRQCs become available.
+One of the primary threats to TLS in ACME is the HNDL (Harvest Now Decyrpt Later) attack. In this scenario, adversaries can passively capture TLS handshakes such as those transmitted over the air and store them for future decryption once CRQCs become available.
 
 If the handshake is not quantum-resistant, a future CRQC could retroactively decrypt session traffic, revealing:
 
 * The identity of the authenticated client.
 
-* Client credentials used in certificate-based authentication (e.g., usernames, device or organization identifiers).
+* Client credentials used in certificate-based authentication (e.g., usernames, URLs, device or organization identifiers).
 
 * Session-specific metadata that may aid surveillance or profiling, such as cipher suites and TLS extensions supported. These elements can help to fingerprint devices, or correlate ACME TLS sessions over time.
 
 To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME TLS deployments MUST adopt post-quantum key exchange mechanisms, as outlined in Section 4 of [I-D.reddy-uta-pqc-app]. These mechanisms ensure that even if handshake data is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
 
-Furthermore, to support hybrid or PQC-only key exchange in bandwidth or latency-constrained ACME deployments, ACME clients and servers should apply the optimizations described in Section 4.1 of [I-D.reddy-uta-pqc-app] to minimize performance overhead.
-
+Furthermore, to support hybrid or PQC-only key exchange in bandwidth or latency-constrained ACME deployments, ACME clients should apply the optimizations described in Section 4.1 of [I-D.reddy-uta-pqc-app] to minimize performance overhead.
 
 # Quantum-Ready Authentication
 
@@ -146,9 +120,7 @@ For data authentication, the concern shifts to potential on-path attackers equip
 
 While this is not as immediate a threat as "Harvest Now, Decrypt Later" attacks, it remains a significant risk that must be addressed proactively. In client/server certificate-based authentication, the security window between the generation of the signature in the CertificateVerify message and its verification by the peer during the TLS handshake is typically short.  However, the security lifetime of digital signatures on X.509 certificates, including those issued by root Certification Authorities (CAs), warrants closer scrutiny.  Root CA certificates can have validity periods of 20 years or more, while root Certificate Revocation Lists (CRLs) often remain valid for a year or longer.  Delegated credentials, such as CRL Signing Certificates or OCSP response signing certificates, generally have shorter lifetimes but still present a potential vulnerability window.
 
-The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols. For example, if an attacker determines the private key of a server certificate before its expiration, they could impersonate the server, causing users to believe their connections are legitimate. This impersonation leads to serious security threats, including unauthorized data disclosure, interception of communications, and overall system compromise.
-
-The quantum-ready authentication property ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
+The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols and ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
 
 ~~~~~ aasvg
           Client                                              Server
@@ -205,35 +177,10 @@ The URLs used in ACME needs to use PQC-only or hybrid key exchange and PQC-only 
 
 The TLS with Application-Layer Protocol Negotiation (TLS ALPN) validation method proves control over a domain name by requiring the ACME client to configure a TLS server to respond to specific connection attempts using the ALPN extension with identifying information.  The ACME server validates control of the domain name by connecting to a TLS server at one of the addresses resolved for the domain name and verifying that a certificate with specific content is presented.
 
-The tls-alpn-02 ACME challenge object has the following format:
-
-   type (required, string):  The string "tls-alpn-02"
-
-   token (required, string):  A random value that uniquely identifies
-      the challenge.  This value MUST have at least 128 bits of entropy.
-      It MUST NOT contain any characters outside the base64url alphabet
-      as described in Section 5 of {{RFC4648}}.  Trailing '=' padding
-      characters MUST be stripped.  See {{RFC4086}} for additional
-      information on randomness requirements.
-
-The client prepares for validation by constructing a self-signed certificate that MUST contain an acmeIdentifier extension and a subjectAlternativeName extension {{RFC5280}}.  The subjectAlternativeName extension MUST contain a single dNSName entry where the value is the domain name being validated.  The acmeIdentifier extension MUST contain the SHA-256 digest {{FIPS180-4}} of the key authorization {{RFC8555}} for the challenge.  The acmeIdentifier extension MUST be critical so that the certificateisn't inadvertently used by non-ACME software.
-
-   The acmeIdentifier extension is identified by the id-pe-
-   acmeIdentifier object identifier (OID) in the id-pe arc {{RFC5280}}:
-
-   id-pe-acmeIdentifier OBJECT IDENTIFIER ::=  { id-pe 31 }
-
-   The extension has the following ASN.1 [X.680] format :
-
-   Authorization ::= OCTET STRING (SIZE (32))
-
-   The extnValue of the id-pe-acmeIdentifier extension is the ASN.1 DER
-   encoding [X.690] of the Authorization structure, which contains the
-   SHA-256 digest of the key authorization for the challenge.
-
-Once this certificate has been created, it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
+Once the tls-alpn-02 ACME challenge certificate has been created (as defined in {{RFC8737}}), it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/2" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
 
 A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server. The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
+
 
    POST /acme/authz/1234/2
 
@@ -282,38 +229,7 @@ For SLH-DSA based JSON Web Signatures:
 | SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature Algorithm for SLH-DSA-SHA2-128f   |
 
    
-On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key.
-
-   The server then verifies the client's control over the domain by verifying that the TLS server was configured as expected using the following steps:
-
-   1.  The ACME server computes the expected SHA-256 digest of the key
-       authorization.
-
-   2.  The ACME server resolves the domain name being validated and
-       chooses one of the IP addresses returned for validation (the
-       server MAY validate against multiple addresses if more than one
-       is returned).
-
-   3.  The ACME server initiates a TLS connection to the chosen IP
-       address.  This connection MUST use TCP port 443.  The ACME server
-       MUST provide an ALPN extension with the single protocol name
-       "acme-tls/2" and an SNI extension containing only the domain name
-       being validated during the TLS handshake.
-
-   4.  The ACME server verifies that during the TLS handshake the
-       application-layer protocol "acme-tls/2" was successfully
-       negotiated (and that the ALPN extension contained only the value
-       "acme-tls/2") and that the certificate returned contains:
-
-       *  a subjectAltName extension containing the dNSName being
-          validated and no other entries
-
-       *  a critical acmeIdentifier extension containing the expected
-          SHA-256 digest computed in step 1
-
-   The comparison of dNSNames MUST be case insensitive {{RFC4343}}.  Note that as ACME doesn't support Unicode identifiers, all dNSNames MUST be encoded using the rules of [RFC3492].
-
-   If all of the above steps succeed, then the validation is successful. Otherwise, it fails.
+On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key and then the server then verifies the client's control over the domain by verifying that the TLS server was configured as expected.
 
 # acme-tls/2 definition
 
@@ -353,4 +269,4 @@ To mitigate such attacks, several steps need to be taken:
 
 # Acknowledgements
 
-This draft leverages text from {{RFC8737}} and {{?I-D.reddy-uta-pqc-app}}.
+This draft leverages text from {{RFC8555}}, {{RFC8737}} and {{?I-D.reddy-uta-pqc-app}}.
