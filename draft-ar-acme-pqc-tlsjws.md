@@ -39,7 +39,7 @@ author:
     city: Bangalore
     region: Karnataka
     country: India
-    email: "kondtir@gmail.com"
+    email: "k.tirumaleswar_reddy@gmail.com"
 
 normative:
     RFC8737:
@@ -61,21 +61,20 @@ normative:
 
 
 --- abstract
-ACME {{8555}} leverages TLS 1.2, JWS signatures primarily for authentication and signature generation that employs the traditional Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) key agreement algorithm for domain control validation. However, TLS 1.2 as well as current JWS signatures is susceptible to future threats from Cryptographically Relevant Quantum Computers, which could potentially compromise a traditional ephemeral public key. If the adversary has also obtained knowledge of the long-term key and ephemeral public key, it could compromise session keys generated as part of the authentication run in ACME.
 
-This draft aims to enhance the security of ACME protocol by defining TLS 1.3 and JWS PQC profile for ACME to make it quantum-safe {{RFC8555}}.
+The Automatic Certificate Management Environment (ACME {{RFC8555}}) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) to authenticate client request payloads. Current ACME deployments rely on traditional public-key algorithms in both JWS and TLS, which are vulnerable to attacks from Cryptographically Relevant Quantum Computers (CRQCs). This document defines post-quantum (PQC) and hybrid post-quantum/traditional (PQ/T) cryptography profiles for ACME, including PQC and PQ/T JWS algorithms, as well as PQC-enabled TLS 1.3 profiles for transport security. These profiles enable ACME clients and servers to achieve quantum-resistant authentication and key establishment.
 
 --- middle
 
 # Introduction
 
-The Automatic Certificate Management Environment (ACME) {{RFC8555}} specification describes methods for validating control of domain names via HTTP and DNS.  Deployment experience has shown it is also useful to be able to validate domain control using the TLS layer alone.  In particular, this allows hosting providers, Content Distribution Networks (CDNs), and TLS-terminating load balancers to validate domain control without modifying the HTTP handling behavior of their backends as explained in {{RFC8737}}.
+The Automatic Certificate Management Environment (ACME {{RFC8555}}) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) for authenticating client requests to the Certificate Authority (CA). ACME relies on TLS to provide confidentiality, integrity, and authentication of the ACME server, ensuring secure transport of protocol messages.
 
-When using protocols such as TLS 1.3 {{RFC8446}}, DTLS 1.3 {{RFC9147}}, or protocols built on these foundations like ACME {{RFC8555}}, clients and servers perform ephemeral public-key exchanges, such as Elliptic Curve Diffie-Hellman (ECDH), to derive a shared secret that ensures forward secrecy. Additionally, they validate each other's identities through X.509 certificates, establishing secure communication. The emergence of a Cryptographically Relevant Quantum Computers (CRQCs) would render current public-key algorithms insecure and obsolete. This is because the mathematical assumptions underpinning these algorithms, which currently offer high levels of security, would no longer hold in the presence of a CRQC.  Consequently, there is an urgent need to update protocols and infrastructure with post-quantum cryptographic (PQC) algorithms.  These algorithms are designed to remain secure against both CRQCs and classical computers. The traditional cryptographic primitives requiring replacement are discussed in {{?I-D.ietf-pquip-pqc-engineers}}, and the NIST PQC Standardization process has selected algorithms such as ML-KEM, SLH-DSA, and ML-DSA as candidates for future deployment in protocols.
+ACME defines multiple domain control validation methods, such as HTTP-01, DNS-01, and TLS-based challenges like tls-alpn-01 {{RFC8737}}. In all cases, ACME depends on classical public-key cryptography, both in JWS for client request authentication and in TLS for server authentication and session key establishment.
 
-Historically, the industry has successfully transitioned between cryptographic protocols, such as upgrading TLS versions and deprecating older ones (e.g., SSLv2), and shifting from RSA to Elliptic Curve Cryptography (ECC), which improved security and reduced key sizes.  However, the transition to ACME PQC presents a unique challenge, primarily due to the algorithm maturity; while NIST has finalized a set of PQC algorithms, ensuring the correctness and security of implementations remains critical.  Even the most secure algorithm is vulnerable if implementation flaws introduce security risks.
+The emergence of Cryptographically Relevant Quantum Computers (CRQCs) threatens the security of these mechanisms. Quantum algorithms, such as Shor’s algorithm, would render widely deployed public-key algorithms (e.g., RSA, ECDSA, and ECDH) insecure. Consequently, there is an need to transition ACME to post-quantum cryptography (PQC) to ensure long-term security.
 
-Any application transmitting messages over untrusted networks is potentially vulnerable to active or passive attacks by adversaries, including those equipped with CRQCs. The degree of vulnerability varies depending on the application, the underlying systems, the value of the data being transmitted, and the attractiveness of attacking a particular individual, device, or flow. This document outlines quantum-ready usage profiles for applications designed to protect against passive and on-path attacks leveraging CRQCs.
+This document defines post-quantum and hybrid PQ/T cryptographic profiles for ACME. These include PQC algorithms for JWS and PQC-enabled TLS 1.3 profiles for transport security. Together, these enhancements provide quantum-resistant authentication and key establishment while maintaining interoperability with existing ACME deployments.
 
 # Conventions and Definitions
 
@@ -94,33 +93,16 @@ For the purposes of this document, it is useful to categorize cryptographic algo
 
   - PQ/T Hybrid Digital Signature: A multi-algorithm digital signature scheme composed of two or more component signature algorithms, where at least one is a post-quantum algorithm and at least one is a traditional algorithm.
 
-Digital signature algorithms play a critical role in X.509 certificates, Certificate Transparency Signed Certificate Timestamps, Online Certificate Status Protocol (OCSP) statements, remote attestation evidence, and any other mechanism that contributes signatures during a TLS handshake or in context of a secure communication establishment.
-
 # Data Confidentiality in ACME
 
-One of the primary threats to TLS in ACME is the HNDL (Harvest Now Decyrpt Later) attack. In this scenario, adversaries can passively capture TLS handshakes such as those transmitted over the air and store them for future decryption once CRQCs become available.
+In ACME, clients may transmit contact information** such as email addresses and other metadata when creating or managing an account. The confidentiality of this information therefore relies entirely on the security of the TLS channel, which provides protection against passive observation during transmission.
 
-If the handshake is not quantum-resistant, a future CRQC could retroactively decrypt session traffic, revealing:
+One of the primary threats to TLS in ACME is the Harvest-Now, Decrypt-Later (HNDL) attack. In this scenario, an adversary passively records encrypted TLS traffic, such as ACME account creation or order requests and stores it for future decryption once Cryptographically Relevant Quantum Computers (CRQCs) become available.
 
-* The identity of the authenticated client.
+CRQCs pose a long-term confidentiality risk because they can break the traditional public-key algorithms (e.g., RSA, ECDH) used in TLS handshakes to establish session keys. Once these algorithms are broken, previously captured TLS sessions can be decrypted, exposing sensitive or personally identifiable information (PII) contained within ACME messages.
 
-* Client credentials used in certificate-based authentication (e.g., usernames, URLs, device or organization identifiers).
-
-* Session-specific metadata that may aid surveillance or profiling, such as cipher suites and TLS extensions supported. These elements can help to fingerprint devices, or correlate ACME TLS sessions over time.
-
-To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME TLS deployments MUST adopt post-quantum key exchange mechanisms, as outlined in Section 4 of [I-D.reddy-uta-pqc-app]. These mechanisms ensure that even if handshake data is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
-
-## Threats to Personally Identifiable Information (PII):
-
-For a client of the ACME protocol, an critical threat to PII from a CRQC is the ability of future quantum computers to break current public-key cryptography. This would enable a HNDL attack, where adversaries collect encrypted data today and store it until sufficiently powerful quantum computers are available to decrypt it. Following are the key threats to an ACME Client PII:
-
-* Decryption of harvested data: Standard encryption methods like ECDH, RSA, which the ACME protocol and Transport Layer Security (TLS) rely on, will be vulnerable to quantum computers running algorithms such as Shor's algorithm.
-
-* Compromised digital signatures: Quantum attacks could allow an adversary to forge digital signatures, enabling impersonation of the certificate authority. This would let them issue fraudulent certificates to tamper with or compromise data.
-
-* Breach of long-lived data: PII, such as financial or health data, that is encrypted today but has a long lifespan could be exposed years from now.
-
-* Weakened supply chain: Vulnerabilities could propagate through a system's ecosystem, particularly in Public Key Infrastructure (PKI) used by ACME.
+To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME deployments MUST adopt post-
+quantum key exchange mechanisms, as outlined in Section 4 of {{I-D.reddy-uta-pqc-app}}.  These mechanisms ensure that even if TLS session is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
 
 # Quantum-Ready Authentication
 
