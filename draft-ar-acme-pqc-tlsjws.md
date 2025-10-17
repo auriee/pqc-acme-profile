@@ -181,6 +181,8 @@ Once the tls-alpn-02 ACME challenge certificate has been created (as defined in 
 
 A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server. The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
 
+Following is an example for ACME JWS signature:
+
 
    POST /acme/authz/1234/2
 
