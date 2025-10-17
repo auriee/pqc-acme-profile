@@ -96,7 +96,7 @@ For the purposes of this document, it is useful to categorize cryptographic algo
 
 Digital signature algorithms play a critical role in X.509 certificates, Certificate Transparency Signed Certificate Timestamps, Online Certificate Status Protocol (OCSP) statements, remote attestation evidence, and any other mechanism that contributes signatures during a TLS handshake or in context of a secure communication establishment.
 
-# Data Confidentiality for TLS in ACME
+# Data Confidentiality in ACME
 
 One of the primary threats to TLS in ACME is the HNDL (Harvest Now Decyrpt Later) attack. In this scenario, adversaries can passively capture TLS handshakes such as those transmitted over the air and store them for future decryption once CRQCs become available.
 
@@ -110,7 +110,17 @@ If the handshake is not quantum-resistant, a future CRQC could retroactively dec
 
 To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME TLS deployments MUST adopt post-quantum key exchange mechanisms, as outlined in Section 4 of [I-D.reddy-uta-pqc-app]. These mechanisms ensure that even if handshake data is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
 
-Furthermore, to support hybrid or PQC-only key exchange in bandwidth or latency-constrained ACME deployments, ACME clients should apply the optimizations described in Section 4.1 of [I-D.reddy-uta-pqc-app] to minimize performance overhead.
+## Threats to Personally Identifiable Information (PII):
+
+For a client of the ACME protocol, an critical threat to PII from a CRQC is the ability of future quantum computers to break current public-key cryptography. This would enable a "harvest now, decrypt later" attack, where adversaries collect encrypted data today and store it until sufficiently powerful quantum computers are available to decrypt it. Following are the key threats to an ACME Client PII:
+
+* Decryption of harvested data: Standard encryption methods like RSA, which the ACME protocol and Transport Layer Security (TLS) rely on, will be vulnerable to quantum computers running algorithms such as Shor's algorithm.
+
+* Compromised digital signatures: Quantum attacks could allow an adversary to forge digital signatures, enabling impersonation of the certificate authority. This would let them issue fraudulent certificates to tamper with or compromise data.
+
+* Breach of long-lived data: PII, such as financial or health data, that is encrypted today but has a long lifespan could be exposed years from now.
+
+* Weakened supply chain: Vulnerabilities could propagate through a system's ecosystem, particularly in Public Key Infrastructure (PKI) used by ACME.
 
 # Quantum-Ready Authentication
 
@@ -121,21 +131,6 @@ For data authentication, the concern shifts to potential on-path attackers equip
 While this is not as immediate a threat as "Harvest Now, Decrypt Later" attacks, it remains a significant risk that must be addressed proactively. In client/server certificate-based authentication, the security window between the generation of the signature in the CertificateVerify message and its verification by the peer during the TLS handshake is typically short.  However, the security lifetime of digital signatures on X.509 certificates, including those issued by root Certification Authorities (CAs), warrants closer scrutiny.  Root CA certificates can have validity periods of 20 years or more, while root Certificate Revocation Lists (CRLs) often remain valid for a year or longer.  Delegated credentials, such as CRL Signing Certificates or OCSP response signing certificates, generally have shorter lifetimes but still present a potential vulnerability window.
 
 The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols and ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
-
-~~~~~ aasvg
-          Client                                              Server
-
-         [Contact Information]
-         [ToS Agreement]
-         [Additional Data]
-         Signature                     ------->
-                                                             Account URL
-                                       <-------           Account Object
-
-
-                   [] Information covered by request signatures
-~~~~~
-{: #tab-acme-pqc title="Account Creation"}
 
 The TLS handshake MUST negotiate a PQC-only or hybrid key exchange. The client’s JWS signature MUST be computed using a PQC-only or composite signature algorithm. Any fallback to classical-only TLS or signature mechanisms MUST be rejected by the server.
 
@@ -158,6 +153,25 @@ Communications between an ACME client and an ACME server are done over HTTPS, us
   * SLH-DSA JWS: Defined in Section 3 of {{?I-D.ietf-cose-sphincs-plus-05}}, these employ SLH-DSA updates to JWS updates to quantum safe JOSE signatures. ACME needs to meet the requirements and updates to JWS to generate quantum safe signatures over HTTPS using JSON.
 
 ACME needs to either leverage ML-DSA or SLH-DSA specifications for JWS instead of RFC7515 for quantum safe signatures and message transport.
+
+For ML-DSA based JSON Web Signatures:
+
+
+| Name      | alg       | Description                                |
+| --------- | --------- | ------------------------------------------ |
+| ML-DSA-44 | ML-DSA-44 | JSON Web Signature Algorithm for ML-DSA-44 |
+| ML-DSA-65 | ML-DSA-65 | JSON Web Signature Algorithm for ML-DSA-65 |
+| ML-DSA-87 | ML-DSA-87 | JSON Web Signature Algorithm for ML-DSA-87 |
+
+For SLH-DSA based JSON Web Signatures:
+
+
+| Name               | alg                | Description                                          |
+| ------------------ | ------------------ | ---------------------------------------------------- |
+| SLH-DSA-SHA2-128s  | SLH-DSA-SHA2-128s  | JSON Web Signature Algorithm for SLH-DSA-SHA2-128s   |
+| SLH-DSA-SHAKE-128s | SLH-DSA-SHAKE-128s | JSON Web Signature Algorithm for SLH-DSA-SHAKE-128s  |
+| SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature Algorithm for SLH-DSA-SHA2-128f   |
+
 
 ## DNSSEC with PQC Signatures
 
@@ -211,25 +225,6 @@ Following is an example for ACME JWS signature:
    }
 
 The "alg" algorithm can be any of the following tables based on the requirements and security level desired as defined {{?I-D.ietf-pquip-pqc-engineers}}.
-
-For ML-DSA based JSON Web Signatures:
-
-
-| Name      | alg       | Description                                |
-| --------- | --------- | ------------------------------------------ |
-| ML-DSA-44 | ML-DSA-44 | JSON Web Signature Algorithm for ML-DSA-44 |
-| ML-DSA-65 | ML-DSA-65 | JSON Web Signature Algorithm for ML-DSA-65 |
-| ML-DSA-87 | ML-DSA-87 | JSON Web Signature Algorithm for ML-DSA-87 |
-
-For SLH-DSA based JSON Web Signatures:
-
-
-| Name               | alg                | Description                                          |
-| ------------------ | ------------------ | ---------------------------------------------------- |
-| SLH-DSA-SHA2-128s  | SLH-DSA-SHA2-128s  | JSON Web Signature Algorithm for SLH-DSA-SHA2-128s   |
-| SLH-DSA-SHAKE-128s | SLH-DSA-SHAKE-128s | JSON Web Signature Algorithm for SLH-DSA-SHAKE-128s  |
-| SLH-DSA-SHA2-128f  | SLH-DSA-SHA2-128f  | JSON Web Signature Algorithm for SLH-DSA-SHA2-128f   |
-
    
 On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key and then the server then verifies the client's control over the domain by verifying that the TLS server was configured as expected.
 
