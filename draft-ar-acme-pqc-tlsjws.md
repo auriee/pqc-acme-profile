@@ -114,7 +114,7 @@ To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL,
 
 For a client of the ACME protocol, an critical threat to PII from a CRQC is the ability of future quantum computers to break current public-key cryptography. This would enable a HNDL attack, where adversaries collect encrypted data today and store it until sufficiently powerful quantum computers are available to decrypt it. Following are the key threats to an ACME Client PII:
 
-* Decryption of harvested data: Standard encryption methods like RSA, which the ACME protocol and Transport Layer Security (TLS) rely on, will be vulnerable to quantum computers running algorithms such as Shor's algorithm.
+* Decryption of harvested data: Standard encryption methods like ECDH, RSA, which the ACME protocol and Transport Layer Security (TLS) rely on, will be vulnerable to quantum computers running algorithms such as Shor's algorithm.
 
 * Compromised digital signatures: Quantum attacks could allow an adversary to forge digital signatures, enabling impersonation of the certificate authority. This would let them issue fraudulent certificates to tamper with or compromise data.
 
