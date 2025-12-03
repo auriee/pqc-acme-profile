@@ -116,7 +116,7 @@ For an ACME server in data authentication, the concern shifts to potential on-pa
 
 The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols and ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
 
-The TLS handshake MUST negotiate a PQC-only or hybrid key exchange. The client’s JWS signature MUST be computed using a PQC-only or composite signature algorithm. Any fallback to classical-only TLS or signature mechanisms MUST be rejected by the server.
+The client’s JWS signature MUST be computed using a PQC-only or composite signature algorithm. Any fallback to classical-only TLS or signature mechanisms MUST be rejected by the server.
 
 ## Post-Quantum X.509 Certificates
 
@@ -167,13 +167,7 @@ The URLs used in ACME needs to use PQC-only or hybrid key exchange and PQC-only 
  
 * Authenticate using PQC-only or composite signatures in the server’s TLS certificate chain; Present a server certificate whose key material is quantum-safe or composite (e.g., X25519+Kyber, Ed25519+ML-DSA).
 
-# PQC TLS with ALPN Challenge
-
-The TLS with Application-Layer Protocol Negotiation (TLS ALPN) validation method proves control over a domain name by requiring the ACME client to configure a TLS server to respond to specific connection attempts using the ALPN extension with identifying information.  The ACME server validates control of the domain name by connecting to a TLS server at one of the addresses resolved for the domain name and verifying that a certificate with specific content is presented.
-
-Once the tls-alpn-01 ACME challenge certificate has been created (as defined in {{RFC8737}}), it MUST be provisioned such that it is returned during a TLS handshake where the "acme-tls/1" application-layer protocol has been negotiated and a Server Name Indication (SNI) extension {{RFC6066}} has been provided containing the domain name being validated.
-
-A client responds by POSTing an empty JSON object ({}) to the challenge URL to acknowledge that the challenge is ready to be validated by the server. The base64url encoding of the protected headers and payload is described in Section 6.1 of {{RFC8555}}.
+# Quantum Safe ACME JWS signature
 
 Following is an example for ACME JWS signature:
 
@@ -205,9 +199,8 @@ Following is an example for ACME JWS signature:
    }
 
 The "alg" algorithm can be any of the following tables based on the requirements and security level desired as defined {{?I-D.ietf-pquip-pqc-engineers}}.
-   
-On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key and then the server then verifies the client's control over the domain by verifying that the TLS server was configured as expected.
-
+ 
+ 
 # Security Considerations
 
 The security considerations outlined in {{?I-D.ietf-pquip-pqc-engineers}} must be carefully evaluated and taken into account.
