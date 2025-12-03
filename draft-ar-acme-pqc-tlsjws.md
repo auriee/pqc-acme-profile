@@ -104,21 +104,19 @@ CRQCs pose a long-term confidentiality risk because they can break the tradition
 To preserve the intended privacy guarantees of TLS 1.3 and protect against HNDL, ACME deployments MUST adopt post-
 quantum key exchange mechanisms, as outlined in Section 4 of {{I-D.reddy-uta-pqc-app}}.  These mechanisms ensure that even if TLS session is recorded today, it cannot be decrypted in the future, maintaining the confidentiality and privacy of the TLS session.
 
+ACME servers that support 0-RTT MAY allow clients to send early data, provided that: The session resumption ticket and key exchange are derived from a quantum-resistant handshake. The ACME request includes nonce-based replay protection (Section 6.5 of RFC 8555). If these conditions are not met, clients MUST avoid using 0-RTT.
+
+An ACME server MUST support at least one PQC-only or composite signature algorithm for signing and verifying JWS objects.
+
 # Quantum-Ready Authentication
 
 Although CRQCs could potentially decrypt past TLS sessions, client/server authentication based on certificates cannot be retroactively compromised. However, the multi-year process required to establish, certify, and embed new root CAs presents a significant challenge. If CRQCs emerge earlier than anticipated, responding promptly to secure authentication systems would be difficult. While the migration to PQ X.509 certificates allows for more time compared to key exchanges, delaying these preparations should be avoided.
 
-For data authentication, the concern shifts to potential on-path attackers equipped with CRQCs capable of breaking certificate-based authentication mechanisms that rely on traditional algorithms. Such attackers could impersonate legitimate entities, tricking victims into connecting to the attacker’s device instead of the intended target, resulting in impersonation attacks. 
-
-While this is not as immediate a threat as "Harvest Now, Decrypt Later" attacks, it remains a significant risk that must be addressed proactively. In client/server certificate-based authentication, the security window between the generation of the signature in the CertificateVerify message and its verification by the peer during the TLS handshake is typically short.  However, the security lifetime of digital signatures on X.509 certificates, including those issued by root Certification Authorities (CAs), warrants closer scrutiny.  Root CA certificates can have validity periods of 20 years or more, while root Certificate Revocation Lists (CRLs) often remain valid for a year or longer.  Delegated credentials, such as CRL Signing Certificates or OCSP response signing certificates, generally have shorter lifetimes but still present a potential vulnerability window.
+For an ACME server in data authentication, the concern shifts to potential on-path attackers equipped with CRQCs capable of breaking certificate-based authentication mechanisms that rely on traditional algorithms. Such attackers could impersonate legitimate entities, tricking victims into connecting to the attacker’s device instead of the intended target, resulting in impersonation attacks. 
 
 The quantum-ready authentication property becomes critical in scenarios where an on-path attacker uses network devices equipped with CRQCs to break traditional authentication protocols and ensures robust authentication through the use of either a pure Post-Quantum certificate or a PQ/T hybrid certificate.
 
 The TLS handshake MUST negotiate a PQC-only or hybrid key exchange. The client’s JWS signature MUST be computed using a PQC-only or composite signature algorithm. Any fallback to classical-only TLS or signature mechanisms MUST be rejected by the server.
-
-ACME servers MUST implement TLS 1.3 with support for PQC-only or hybrid key exchanges (e.g., X25519+Kyber768) and MUST NOT permit fallback to TLS 1.2 or below for certificate-management transactions. ACME servers that support 0-RTT MAY allow clients to send early data, provided that: The session resumption ticket and key exchange are derived from a quantum-resistant handshake. The ACME request includes nonce-based replay protection (Section 6.5 of RFC 8555). If these conditions are not met, clients MUST avoid using 0-RTT.
-
-An ACME server MUST support at least one PQC-only or composite signature algorithm for signing and verifying JWS objects.
 
 ## Post-Quantum X.509 Certificates
 
@@ -210,12 +208,6 @@ The "alg" algorithm can be any of the following tables based on the requirements
    
 On receiving this request from a client, the server constructs and stores the key authorization from the challenge "token" value and the current client account key and then the server then verifies the client's control over the domain by verifying that the TLS server was configured as expected.
 
-# acme-tls/1 definition
-
-The "acme-tls/1" protocol MUST only be used for validating ACME tls-alpn-01 challenges.  The protocol consists of a TLS handshake in which the required validation information is transmitted.  The "acme-tls/2" protocol does not carry application data.  Once the handshake is completed, the client MUST NOT exchange any further data with the server and MUST immediately close the connection.  While this protocol uses X.509 certificates, it does not use the authentication method described in {{RFC5280}} and, as such, does not require a valid signature on the provided certificate nor require the TLS handshake to complete successfully.
-
-An ACME server may wish to use an off-the-shelf TLS stack where it is not simple to allow these divergences in the protocol as defined.  Because of this, an ACME server MAY choose to withhold authorization if either the certificate signature is invalid or the handshake doesn't fully complete. ACME servers that implement "acme-tls/2" MUST only negotiate TLS 1.3 {{RFC8446}} only when connecting to clients for validation as TLS 1.3 has support for post quantum enhancements.
-
 # Security Considerations
 
 The security considerations outlined in {{?I-D.ietf-pquip-pqc-engineers}} must be carefully evaluated and taken into account.
@@ -229,7 +221,7 @@ Hybrid key exchange provides a practical and flexible solution, offering protect
 ensuring resilience to potential catastrophic vulnerabilities in any single algorithm. This approach allows for a gradual
 transition to PQC, preserving the benefits of traditional cryptosystems without requiring their immediate replacement.
 
-## MITM Attacks with CRQC 
+## MITM Attacks with CRQC in ACME
 
 A MITM attack is possible if an adversary possesses a CRQC capable of breaking traditional public-key signatures. The attacker can generate
 a forged certificate and create a valid signature, enabling them to impersonate a TLS peer, whether a server or a client. This completely undermines the authentication
@@ -248,4 +240,4 @@ To mitigate such attacks, several steps need to be taken:
 
 # Acknowledgements
 
-This draft leverages text from {{RFC8555}}, {{RFC8737}} and {{?I-D.reddy-uta-pqc-app}}.
+This draft leverages text from {{RFC8555}}, {{RFC8737}} and {{?I-D.ietf-uta-pqc-app}}.
