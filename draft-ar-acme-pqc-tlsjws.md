@@ -160,7 +160,7 @@ For SLH-DSA based JSON Web Signatures:
 
 ## DNSSEC with PQC Signatures
 
-When the DNS-01 challenge type is used, ACME servers rely on DNSSEC to authenticate the DNS records associated with the validation. However, the DNSSEC ecosystem does not yet have standardized post-quantum signature algorithms, and the IETF is still evaluating the feasibility and operational impact of introducing PQC into DNSSEC. As a result, DNSSEC today remains dependent on traditional algorithms such as RSA and ECDSA, which are vulnerable to future CRQCs.
+When the DNS-01 challenge type is used, ACME servers rely on DNSSEC to authenticate the DNS records associated with the validation. However, the DNSSEC ecosystem does not yet have standardized use of post-quantum signature algorithms, and the IETF is still evaluating the feasibility and operational impact of introducing PQC into DNSSEC. As a result, DNSSEC today remains dependent on traditional algorithms such as RSA and ECDSA, which are vulnerable to future CRQCs.
 
 Given these limitations, ACME servers will have to assess the strength of the DNSSEC validation chain and treat DNSSEC dependencies on traditional-only algorithms as providing no long-term authentication guarantees in the presence of CRQCs. Once DNSSEC supports PQC, ACME servers and CAs are expected to migrate DNS-01 validation policies accordingly.
 
@@ -209,8 +209,8 @@ To mitigate such attacks, several steps need to be taken:
 
 1. Revocation and Transition: Both ACME clients and servers that use traditional certificates will have to revoke them and migrate to PQC authentication.
 2. Client-Side Verification: ACME clients should avoid establishing TLS sessions with ACME servers that do not support PQC authentication.
-3. Server-Side Verification: ACME servers can examine incoming requests to determine whether the client’s JWS signatures and associated JWKs are quantum-resistant. Servers that intend to operate in a quantum-ready mode may decline to process requests authenticated with traditional-only signatures.
-4. PKI migration planning. Organizations operating PKI infrastructures can plan a transition toward issuing PQC or hybrid certificates and phase out issuance of certificates based solely on traditional algorithms as part of their broader quantum-readiness strategy.
+3. Server-Side Verification: ACME servers can examine incoming requests to determine whether the client’s JWS signatures and associated JWKs are quantum-resistant. Servers that intend to operate in a quantum-ready mode will have to decline to process requests authenticated with traditional-only signatures.
+4. PKI migration planning. Organizations operating PKI infrastructures can plan a transition toward issuing PQC or hybrid certificates and phase out issuance of certificates based solely on traditional algorithms as part of their quantum-readiness strategy.
 
 # IANA Considerations
 
