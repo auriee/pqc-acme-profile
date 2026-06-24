@@ -242,7 +242,7 @@ To mitigate such attacks, the following requirements apply:
 
 1. Revocation and Transition: ACME clients and servers that rely on traditional certificates SHOULD revoke such certificates and MUST migrate to PQC-based or hybrid authentication mechanisms.
 
-2. Client-Side Verification: ACME clients MUST NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication. Clients SHOULD actively verify the presence of quantum-resistant authentication before proceeding.
+2. Client-Side Verification: ACME clients SHOULD NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication. Clients SHOULD actively verify the presence of quantum-resistant authentication before proceeding.
 
 3. Server-Side Verification: ACME servers MUST evaluate incoming requests to determine whether the client’s JWS signatures and associated JWKs provide quantum resistance. Servers operating under a Strict Quantum-Ready Profile MUST reject requests authenticated solely with traditional signature algorithms.
 
