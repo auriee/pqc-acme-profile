@@ -156,6 +156,8 @@ accept traditional-only JWS signatures during an explicitly bounded
 transition period, except when operating under the Strict Quantum-Ready
 Profile.
 
+This profile uses SLH‑DSA with SHAKE rather than SHA‑2. ML‑DSA and SLH‑DSA‑SHAKE both rely only on SHAKE, so this choice lets every post‑quantum signature in the profile use a single hash primitive, avoiding a separate SHA‑2 implementation needed only by SLH‑DSA‑SHA2 and reducing the number of distinct primitives. Composite ML‑DSA complements this by combining a post‑quantum signature with a traditional one (e.g., ECDSA or RSA), so a certificate remains secure as long as either component holds. This provides hybrid assurance during migration and lowers deployment risk for ACME clients and existing PKI that are not yet ready to rely on a post‑quantum algorithm alone.
+
 The security properties of these composite algorithms, including their
 strong-unforgeability (SUF-CMA) characteristics, are described in the
 Security Considerations of {{I-D.ietf-jose-pq-composite-sigs}}.
