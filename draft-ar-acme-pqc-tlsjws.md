@@ -240,7 +240,7 @@ Hybrid key exchange provides a practical and flexible solution, offering protect
 A MITM attack can occur if an adversary possesses a CRQC capable of breaking traditional public-key signature schemes. In such a scenario, the adversary can generate forged certificates and produce valid signatures, thereby impersonating a TLS peer (server or client). Consequently, the authentication guarantees of TLS will have to be considered compromised when relying solely on traditional certificate-based authentication.
 To mitigate such attacks, the following requirements apply:
 
-1. Revocation and Transition: ACME clients and servers that rely on traditional certificates SHOULD revoke such certificates and MUST migrate to PQC-based or hybrid authentication mechanisms.
+1. Revocation and Transition: ACME clients and servers that rely on traditional certificates SHOULD revoke such certificates and migrate to PQC-based or hybrid authentication mechanisms.
 
 2. Client-Side Verification: ACME clients SHOULD NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication. Clients SHOULD actively verify the presence of quantum-resistant authentication before proceeding.
 
