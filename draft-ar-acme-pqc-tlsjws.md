@@ -182,7 +182,7 @@ Given these limitations, ACME servers SHOULD assess the strength of the DNSSEC v
 
 ## TLS-ALPN-01 Challenge
 
-When the tls-alpn-01 challenge type {{RFC8737}} is used, the ACME server validates domain control by initiating a TLS connection to the host identified in the certificate request. ACME servers operating under the Strict Quantum-Ready Profile MUST reject tls-alpn-01 validation attempts where the challenge certificate relies solely on traditional algorithms. 
+When the tls-alpn-01 challenge type {{RFC8737}} is used, the ACME server validates domain control by initiating a TLS connection to the host identified in the certificate request. ACME servers operating under the Strict Quantum-Ready Profile MAY reject tls-alpn-01 validation attempts where the challenge certificate relies solely on traditional algorithms. 
 
 ## URLs with PQC
 
@@ -237,14 +237,16 @@ Hybrid key exchange provides a practical and flexible solution, offering protect
 
 ## MITM Attacks with CRQC in ACME
 
-A MITM attack is possible if an adversary possesses a CRQC capable of breaking traditional public-key signatures. The attacker can generate a forged certificate and create a valid signature, enabling them to impersonate a TLS peer, whether a server or a client. This completely undermines the authentication guarantees of TLS when relying on traditional certificates.
+A MITM attack MAY occur if an adversary possesses a CRQC capable of breaking traditional public-key signature schemes. In such a scenario, the adversary can generate forged certificates and produce valid signatures, thereby impersonating a TLS peer (server or client). Consequently, the authentication guarantees of TLS MUST be considered compromised when relying solely on traditional certificate-based authentication.
+To mitigate such attacks, the following requirements apply:
 
-To mitigate such attacks, several steps need to be taken:
+1. Revocation and Transition: ACME clients and servers that rely on traditional certificates SHOULD revoke such certificates and MUST migrate to PQC-based or hybrid authentication mechanisms.
 
-1. Revocation and Transition: Both ACME clients and servers that use traditional certificates SHOULD revoke them and migrate to PQC authentication.
-2. Client-Side Verification: ACME clients should avoid establishing TLS sessions with ACME servers that do not support PQC authentication.
-3. Server-Side Verification: ACME servers can examine incoming requests to determine whether the client's JWS signatures and associated JWKs are quantum-resistant. Servers operating under the Strict Quantum-Ready Profile MUST reject requests authenticated with traditional-only signatures. 
-4. PKI migration planning. Organizations operating PKI infrastructures can plan a transition toward issuing PQC or hybrid certificates and phase out issuance of certificates based solely on traditional algorithms as part of their quantum-readiness strategy.
+2. Client-Side Verification: ACME clients MUST NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication. Clients SHOULD actively verify the presence of quantum-resistant authentication before proceeding.
+
+3. Server-Side Verification: ACME servers MUST evaluate incoming requests to determine whether the client’s JWS signatures and associated JWKs provide quantum resistance. Servers operating under a Strict Quantum-Ready Profile MUST reject requests authenticated solely with traditional signature algorithms.
+
+4. PKI Migration Planning: Organizations operating PKI infrastructures SHOULD define and implement a transition strategy toward issuing PQC or hybrid certificates. Such organizations MUST phase out the issuance of certificates that rely exclusively on traditional cryptographic algorithms within a defined migration timeline as part of their quantum-readiness posture.
 
 # IANA Considerations
 
