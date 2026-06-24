@@ -246,7 +246,7 @@ To mitigate such attacks, the following requirements apply:
 
 3. Server-Side Verification: ACME servers MUST evaluate incoming requests to determine whether the client’s JWS signatures and associated JWKs provide quantum resistance. Servers operating under a Strict Quantum-Ready Profile MUST reject requests authenticated solely with traditional signature algorithms.
 
-4. PKI Migration Planning: Organizations operating PKI infrastructures SHOULD define and implement a transition strategy toward issuing PQC or hybrid certificates. Such organizations MUST phase out the issuance of certificates that rely exclusively on traditional cryptographic algorithms within a defined migration timeline as part of their quantum-readiness posture.
+4. PKI Migration Planning: Organizations operating PKI infrastructures SHOULD define and implement a transition strategy toward issuing PQC or hybrid certificates. Such organizations will have to phase out the issuance of certificates that rely exclusively on traditional cryptographic algorithms within a defined migration timeline as part of their quantum-readiness posture.
 
 # IANA Considerations
 
