@@ -180,10 +180,6 @@ When the DNS-01 challenge type is used, ACME servers rely on DNSSEC to authentic
 
 Given these limitations, ACME servers SHOULD assess the strength of the DNSSEC validation chain and treat DNSSEC dependencies on traditional-only algorithms as providing reduced or uncertain long-term authentication guarantees in the presence of CRQCs. Once DNSSEC supports PQC, ACME servers and CAs are expected to migrate DNS-01 validation policies accordingly.
 
-## TLS-ALPN-01 Challenge
-
-When the tls-alpn-01 challenge type {{RFC8737}} is used, the ACME server validates domain control by initiating a TLS connection to the host identified in the certificate request. ACME servers operating under the Strict Quantum-Ready Profile MAY reject tls-alpn-01 validation attempts where the challenge certificate relies solely on traditional algorithms. 
-
 ## URLs with PQC
 
 When operating under a quantum-ready ACME profile, all URLs provided by the
@@ -197,14 +193,6 @@ server authentication described in {{tls-server-authentication}} and is
 governed by the authentication policy of the selected quantum-ready
 profile. This section imposes no separate or additional authentication
 requirement.
-
-## CSR Signature Requirement
-
-When operating under a quantum-ready ACME profile, and when an ACME client explicitly requests issuance of a PQC-only or PQ/T hybrid certificate, the Certificate Signing Request (CSR) submitted during the finalize step MUST be signed using a post-quantum or PQ/T hybrid signature algorithm consistent with the requested certificate type.
-
-If a client submits a CSR that contains a PQC or hybrid public key but is signed using a traditional-only signature algorithm (e.g., RSA or ECDSA), the ACME server MUST reject the request with a `badCSR` error.
-
-This document does not prescribe which certificate types a CA must issue or accept. Certificate profile requirements are outside the scope of this document and are governed by the applicable CA policy and industry frameworks.
 
 # Quantum Safe ACME JWS signature
 
@@ -242,7 +230,7 @@ To mitigate such attacks, the following requirements apply:
 
 1. Revocation and Transition: ACME clients and servers that rely on traditional certificates SHOULD revoke such certificates and migrate to PQC-based or hybrid authentication mechanisms.
 
-2. Client-Side Verification: ACME clients SHOULD NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication. Clients SHOULD actively verify the presence of quantum-resistant authentication before proceeding.
+2. Client-Side Verification: ACME clients SHOULD NOT establish TLS sessions with ACME servers that do not support PQC or hybrid authentication.
 
 3. Server-Side Verification: ACME servers MUST evaluate incoming requests to determine whether the client’s JWS signatures and associated JWKs provide quantum resistance. Servers operating under a Strict Quantum-Ready Profile MUST reject requests authenticated solely with traditional signature algorithms.
 
