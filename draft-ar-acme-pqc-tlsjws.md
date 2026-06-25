@@ -246,17 +246,9 @@ The normative measures that mitigate this threat are specified in the profile
 sections of this document and are not restated here as independent
 requirements:
 
-* Under the Quantum-Ready Profile, ACME servers MUST support PQC-only or PQ/T
-  hybrid authentication for both TLS server authentication
-  ({{tls-server-authentication}}) and JWS request authentication
-  ({{jws-request-authentication}}). Traditional-only authentication MAY
-  continue to be accepted only during an explicitly bounded transition
-  period.
+* The Quantum-Ready Profile requires support for PQC-only or PQ/T hybrid authentication for both TLS server authentication ({{tls-server-authentication}}) and JWS request authentication ({{jws-request-authentication}}), and permits traditional-only authentication only during an explicitly bounded transition period.
 
-* Under the Strict Quantum-Ready Profile, ACME servers MUST reject 
-  TLS server authentication or JWS request authentication
-  that relies solely on traditional signature algorithms, with no fallback
-  ({{strict-quantum-ready-profile}}).
+* The Strict Quantum-Ready Profile rejects any authentication that relies solely on traditional signature algorithms, with no fallback ({{strict-quantum-ready-profile}}).
 
 Independent of the selected profile, organizations operating PKI
 infrastructures are expected to define and implement a transition strategy
