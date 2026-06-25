@@ -234,7 +234,7 @@ Hybrid key exchange provides a practical and flexible solution, offering protect
 
 SLH-DSA signatures are substantially larger than ML-DSA or traditional
 signatures. ACME servers that accept SLH-DSA-authenticated JWS requests
-SHOULD account for the increased message size in request-size limits and
+will have to account for the increased message size in request-size limits and
 resource provisioning, so that the larger signatures do not become a
 denial-of-service vector.
 
