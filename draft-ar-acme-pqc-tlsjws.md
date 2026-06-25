@@ -254,7 +254,7 @@ requirements:
   period.
 
 * Under the Strict Quantum-Ready Profile, ACME servers MUST reject any
-  authentication — TLS server authentication or JWS request authentication —
+  TLS server authentication or JWS request authentication
   that relies solely on traditional signature algorithms, with no fallback
   ({{strict-quantum-ready-profile}}).
 
