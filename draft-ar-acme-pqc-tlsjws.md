@@ -3,7 +3,7 @@ title: "Quantum-Ready Profiles for ACME"
 abbrev: "Quantum-Ready ACME Profiles"
 category: std
 
-docname: draft-ar-acme-pqc-tlsjws
+docname: draft-ar-acme-pqc-tlsjws-00
 submissiontype: IETF
 number:
 date:
