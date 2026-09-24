@@ -104,9 +104,7 @@ For the purposes of this document, it is useful to categorize cryptographic algo
 
 * Quantum-Ready Profile: A deployment profile under which all TLS connections use post-quantum or PQ/T hybrid key exchange, and post-quantum or PQ/T hybrid authentication is supported for both TLS server authentication and JWS request authentication. Traditional-only authentication may continue to be accepted during an explicitly bounded transition period.
 
-* Strict Quantum-Ready Profile: A Quantum-Ready Profile that additionally rejects traditional-only authentication, requiring post-quantum or PQ/T hybrid signature algorithms for both TLS server authentication and JWS request authentication with no traditional-only fallback.
-
-Selection of a Quantum-Ready Profile or Strict Quantum-Ready Profile is a matter of deployment policy.
+Selection of a Quantum-Ready Profile is a matter of deployment policy.
 
 # Quantum-Ready TLS Channel Requirements {#quantum-ready-tls-channel-requirements}
 
@@ -116,7 +114,7 @@ ACME deployments operating under a quantum-ready profile MUST use TLS 1.3 {{RFC8
 
 One of the primary threats to TLS in ACME is the Harvest-Now, Decrypt-Later (HNDL) attack. In this scenario, an adversary passively records encrypted TLS traffic, such as ACME account creation or order requests, and stores it for future decryption once Cryptographically Relevant Quantum Computers (CRQCs) become available. CRQCs can break the traditional public-key algorithms (e.g., RSA, ECDH) used in TLS handshakes to establish session keys, exposing sensitive PII contained within ACME messages.
 
-To protect against HNDL, ACME deployments operating under a quantum-ready profile MUST adopt post-quantum or PQ/T hybrid key exchange mechanisms for all TLS connections, as outlined in Section 4 of {{I-D.ietf-uta-pqc-app}}. These mechanisms ensure that recorded TLS sessions cannot be retrospectively decrypted.
+To protect against HNDL, ACME deployments operating under a quantum-ready profile MAY adopt post-quantum or PQ/T hybrid key exchange mechanisms for all TLS connections, as outlined in Section 4 of {{I-D.ietf-uta-pqc-app}}. These mechanisms ensure that recorded TLS sessions cannot be retrospectively decrypted.
 
 # Quantum-Ready Authentication
 
@@ -136,7 +134,7 @@ of planning and must begin well before a CRQC is publicly known.
 
 For TLS server authentication, ACME servers operating under a quantum-ready profile:
 
-- MUST support TLS server authentication using PQC-only or PQ/T hybrid
+- MAY support TLS server authentication using PQC-only or PQ/T hybrid
   certificate signatures, following the authentication guidance of
   {{I-D.ietf-uta-pqc-app}}.
 - MAY continue to accept traditional-only certificate signatures during
@@ -153,77 +151,17 @@ must be underway before the threat materialises.
 
 This document updates Section 6.2 of {{RFC8555}}.
 
-ACME servers operating under a quantum-ready profile MUST implement ML-DSA-44, ML-DSA-65, and ML-DSA-87 {{RFC9964}} and the composite ML-DSA algorithm pairing ML-DSA-44 with ECDSA-P256 {{!I-D.ietf-jose-pq-composite-sigs}}.
+ACME servers operating under a quantum-ready profile MAY implement ML-DSA-44, ML-DSA-65, and ML-DSA-87 {{RFC9964}} and the composite ML-DSA algorithm pairing ML-DSA-44 with ECDSA-P256 {{!I-D.ietf-jose-pq-composite-sigs}}.
 Such servers SHOULD also implement SLH-DSA-SHAKE-128s, SLH-DSA-SHAKE-192s, and
 SLH-DSA-SHAKE-256s {{!I-D.ietf-cose-sphincs-plus}} and the composite ML-DSA
 algorithms pairing ML-DSA-65 with Ed25519 and ML-DSA-87 with Ed448
 {{!I-D.ietf-jose-pq-composite-sigs}}. ES256 remains mandatory-to-implement
 for backward compatibility during the transition period. ACME servers MAY
 accept traditional-only JWS signatures during an explicitly bounded
-transition period, except when operating under the Strict Quantum-Ready
-Profile.
+transition period.
 
 The JWS "alg" values named in this section are registered in the IANA "JSON
 Web Signature and Encryption Algorithms" registry established by {{RFC7518}}.
-
-This profile uses SLH‑DSA with SHAKE rather than SHA‑2. ML‑DSA and SLH‑DSA‑SHAKE both rely only on SHAKE, so this choice lets every post‑quantum signature in the profile use a single hash primitive, avoiding a separate SHA‑2 implementation needed only by SLH‑DSA‑SHA2 and reducing the number of distinct primitives. Composite ML‑DSA complements this by combining a post‑quantum signature with a traditional one (e.g., ECDSA or RSA), so a certificate remains secure as long as either component holds. This provides hybrid assurance during migration and lowers deployment risk for ACME clients and existing PKI that are not yet ready to rely on a post‑quantum algorithm alone.
-
-The security properties of these composite algorithms, including their
-strong-unforgeability (SUF-CMA) characteristics, are described in the
-Security Considerations of {{I-D.ietf-jose-pq-composite-sigs}}.
-
-## Strict Quantum-Ready Profile {#strict-quantum-ready-profile}
-
-The Strict Quantum-Ready Profile is intended for deployments that require
-quantum-resistant authentication (e.g., high-assurance environments or
-regulatory-driven profiles). Under this profile:
-
-- TLS server authentication and JWS request authentication MUST use PQC-only
-  or PQ/T hybrid signature algorithms.
-- Any fallback to traditional-only signature algorithms MUST be rejected.
-
-# Additional Quantum-Ready Requirements for ACME
-
-## DNSSEC with PQC Signatures
-
-When the DNS-01 challenge type is used, ACME servers rely on DNSSEC to authenticate the DNS records associated with the validation. However, the DNSSEC ecosystem does not yet have standardized use of post-quantum signature algorithms, and the IETF is still evaluating the feasibility and operational impact of introducing PQC into DNSSEC. As a result, DNSSEC today remains dependent on traditional algorithms such as RSA and ECDSA, which are vulnerable to future CRQCs.
-
-Given these limitations, ACME servers SHOULD assess the strength of the DNSSEC validation chain and treat DNSSEC dependencies on traditional-only algorithms as providing reduced or uncertain long-term authentication guarantees in the presence of CRQCs. Once DNSSEC supports PQC, ACME servers and CAs are expected to migrate DNS-01 validation policies accordingly.
-
-## URLs with PQC
-
-When operating under a quantum-ready ACME profile, all URLs provided by the
-ACME directory (e.g., `newAccount`, `newOrder`, `revokeCert`) MUST be
-accessible over HTTPS endpoints that use post-quantum or PQ/T hybrid key
-exchange mechanisms, consistent with the TLS channel requirements of
-{{quantum-ready-tls-channel-requirements}}.
-
-The certificate authentication presented on these endpoints is the TLS
-server authentication described in {{tls-server-authentication}} and is
-governed by the authentication policy of the selected quantum-ready
-profile. This section imposes no separate or additional authentication
-requirement.
-
-# Quantum Safe ACME JWS signature
-
-Following is an example for ACME JWS signature:
-
-~~~
-POST /acme/authz/1234/2
-Host: example.com
-Content-Type: application/jose+json
-
-{
-  "protected": base64url({
-    "alg": "ML-DSA-44",
-    "kid": "https://example.com/acme/acct/1",
-    "nonce": "JHb54aT_KTXBWQOzGYkt9A",
-    "url": "https://example.com/acme/authz/1234/2"
-  }),
-  "payload": base64url({}),
-  "signature": "Q1bURgJoEslbD1c5...3pYdSMLio57mQNN4"
-}
-~~~
 
 # Security Considerations
 
@@ -244,11 +182,7 @@ A MITM attack can occur if an adversary possesses a CRQC capable of breaking tra
 
 The normative measures that mitigate this threat are specified in the profile
 sections of this document and are not restated here as independent
-requirements:
-
-* The Quantum-Ready Profile requires support for PQC-only or PQ/T hybrid authentication for both TLS server authentication ({{tls-server-authentication}}) and JWS request authentication ({{jws-request-authentication}}), and permits traditional-only authentication only during an explicitly bounded transition period.
-
-* The Strict Quantum-Ready Profile rejects any authentication that relies solely on traditional signature algorithms, with no fallback ({{strict-quantum-ready-profile}}).
+requirements: The Quantum-Ready Profile requires support for PQC-only or PQ/T hybrid authentication for both TLS server authentication ({{tls-server-authentication}}) and JWS request authentication ({{jws-request-authentication}}), and permits traditional-only authentication only during an explicitly bounded transition period.
 
 Independent of the selected profile, organizations operating PKI
 infrastructures are expected to define and implement a transition strategy
