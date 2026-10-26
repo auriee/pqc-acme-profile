@@ -68,7 +68,7 @@ informative:
 
 --- abstract
 
-This document updates RFC 8555 (ACME) to specify post-quantum and PQ/T hybrid cryptographic requirements for quantum-ready deployments. The Automatic Certificate Management Environment (ACME) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) to authenticate client request payloads. Current ACME deployments rely on traditional public-key algorithms in both JWS and TLS, which are vulnerable to attacks from Cryptographically Relevant Quantum Computers (CRQCs). This specification defines PQC or PQ/ HybridT TLS 1.3 key establishment and specify PQC or PQ/T authentication mechanisms for JWS and TLS where defined by the quantum ready ACME mechanism. This specification enables ACME clients and servers to achieve quantum-resistant confidentiality and authentication.
+This document updates RFC 8555 (ACME) to specify post-quantum and PQ/T hybrid cryptographic requirements for quantum-ready deployments. The Automatic Certificate Management Environment (ACME) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) to authenticate client request payloads. Current ACME deployments rely on traditional public-key algorithms in both JWS and TLS, which are vulnerable to attacks from Cryptographically Relevant Quantum Computers (CRQCs). This specification defines PQC or PQ/T Hybrid TLS 1.3 key establishment and specify PQC or PQ/T authentication mechanisms for JWS and TLS where defined by the quantum ready ACME mechanism. This specification enables ACME clients and servers to achieve quantum-resistant confidentiality and authentication.
 
 --- middle
 
