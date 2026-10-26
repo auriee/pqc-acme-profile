@@ -80,7 +80,7 @@ ACME defines multiple domain control validation methods, such as HTTP-01, DNS-01
 
 The emergence of Cryptographically Relevant Quantum Computers (CRQCs) threatens the security of these mechanisms. Quantum algorithms, such as Shor's algorithm, would render widely deployed public-key algorithms (e.g., RSA, ECDSA, and ECDH) insecure. Consequently, there is a need to transition ACME to post-quantum cryptography (PQC) to ensure long-term security.
 
-This document makes two distinct contributions. First, it specifies post-quantum and PQ/T hybrid signature algorithms as mandatory-to-implement for authentication in quantum-ready ACME deployments — covering both JWS request authentication (updating RFC 8555 Section 6.2, following the same precedent by which RFC 8555 mandated ES256) and TLS server authentication. Second, it mandates the use of post-quantum or PQ/T hybrid key exchange for the TLS channel underlying ACME, specifically to address the Harvest-Now, Decrypt-Later (HNDL) threat to ACME traffic confidentiality. Unless explicitly stated otherwise, all requirements in this document apply only to deployments operating under these quantum-ready mechanisms.
+This document makes two distinct contributions. First, it specifies post-quantum and PQ/T hybrid signature algorithms as mandatory-to-implement for authentication in quantum-ready ACME deployments — covering both JWS request authentication (updating RFC 8555 Section 6.2, following the same precedent by which RFC 8555 mandated ES256) and TLS server authentication. Second, it enables the use of post-quantum or PQ/T hybrid key exchange for the TLS channel underlying ACME, specifically to address the Harvest-Now, Decrypt-Later (HNDL) threat to ACME traffic confidentiality. Unless explicitly stated otherwise, all requirements in this document apply only to deployments operating under these quantum-ready mechanisms.
 
 # Conventions and Definitions
 
@@ -114,7 +114,7 @@ ACME deployments operating under a quantum-ready mechanism MUST use TLS 1.3 {{RF
 
 One of the primary threats to TLS in ACME is the Harvest-Now, Decrypt-Later (HNDL) attack. In this scenario, an adversary passively records encrypted TLS traffic, such as ACME account creation or order requests, and stores it for future decryption once Cryptographically Relevant Quantum Computers (CRQCs) become available. CRQCs can break the traditional public-key algorithms (e.g., RSA, ECDH) used in TLS handshakes to establish session keys, exposing sensitive PII contained within ACME messages.
 
-To protect against HNDL, ACME deployments operating under a quantum-ready mechanism MAY adopt post-quantum or PQ/T hybrid key exchange mechanisms for all TLS connections, as outlined in Section 4 of {{I-D.ietf-uta-pqc-app}}. These mechanisms ensure that recorded TLS sessions cannot be retrospectively decrypted.
+To protect against HNDL, ACME deployments operating under a quantum-ready mechanism will have to adopt post-quantum or PQ/T hybrid key exchange mechanisms for all TLS connections, as outlined in Section 4 of {{I-D.ietf-uta-pqc-app}}. These mechanisms ensure that recorded TLS sessions cannot be retrospectively decrypted.
 
 # Quantum-Ready Authentication
 
@@ -134,10 +134,10 @@ of planning and must begin well before a CRQC is publicly known.
 
 For TLS server authentication, ACME servers operating under a quantum-ready mechanism:
 
-- MAY support TLS server authentication using PQC-only or PQ/T hybrid
+- SHALL support TLS server authentication using PQC-only or PQ/T hybrid
   certificate signatures, following the authentication guidance of
   {{I-D.ietf-uta-pqc-app}}.
-- MAY continue to accept traditional-only certificate signatures during
+- SHALL continue to accept traditional-only certificate signatures during
   an explicitly bounded transition period.
 
 ## JWS Request Authentication {#jws-request-authentication}
@@ -151,14 +151,7 @@ must be underway before the threat materialises.
 
 This document updates Section 6.2 of {{RFC8555}}.
 
-ACME servers operating under a quantum-ready mechanism MAY implement ML-DSA-44, ML-DSA-65, and ML-DSA-87 {{RFC9964}} and the composite ML-DSA algorithm pairing ML-DSA-44 with ECDSA-P256 {{!I-D.ietf-jose-pq-composite-sigs}}.
-Such servers SHOULD also implement SLH-DSA-SHAKE-128s, SLH-DSA-SHAKE-192s, and
-SLH-DSA-SHAKE-256s {{!I-D.ietf-cose-sphincs-plus}} and the composite ML-DSA
-algorithms pairing ML-DSA-65 with Ed25519 and ML-DSA-87 with Ed448
-{{!I-D.ietf-jose-pq-composite-sigs}}. ES256 remains mandatory-to-implement
-for backward compatibility during the transition period. ACME servers MAY
-accept traditional-only JWS signatures during an explicitly bounded
-transition period.
+ACME servers that support quantum-ready mechanism and request signing will have to support the ML-DSA algorithms defined in {{RFC9964}}, the SLH-DSA algorithms defined in {{!I-D.ietf-cose-sphincs-plus}}, and the composite ML-DSA algorithms defined in {{!I-D.ietf-jose-pq-composite-sigs}}. ES256 remains mandatory-to-implement for backward compatibility during the transition period. ACME servers MAY accept traditional-only JWS signatures during an explicitly bounded transition period.
 
 The JWS "alg" values named in this section are registered in the IANA "JSON
 Web Signature and Encryption Algorithms" registry established by {{RFC7518}}.
