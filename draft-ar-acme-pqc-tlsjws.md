@@ -1,9 +1,9 @@
 ---
-title: "Quantum Ready ACME mechanism"
-abbrev: "Quantum Ready ACME mechanism"
+title: "Quantum-Ready ACME Mechanism"
+abbrev: "Quantum-Ready ACME Mechanism"
 category: std
 
-docname: draft-ar-acme-pqc-tlsjws-00
+docname: draft-ar-acme-pqc-tlsjws-latest
 submissiontype: IETF
 number:
 date:
@@ -49,9 +49,9 @@ normative:
     RFC8555:
     RFC2119:
     RFC8174:
-    RFC7515:  
-    RFC7518:  
-    RFC9964:   
+    RFC7515:
+    RFC7518:
+    RFC9964:
     I-D.ietf-uta-pqc-app:
     I-D.ietf-jose-pq-composite-sigs:
     I-D.ietf-cose-sphincs-plus:
@@ -62,13 +62,13 @@ informative:
      date: false
      author:
         - org: National Institute of Standards and Technology (NIST)
-  RFC9958:   
+  RFC9958:
   I-D.reddy-pquip-pqc-signature-migration:
 
 
 --- abstract
 
-This document updates RFC 8555 (ACME) to specify post-quantum and PQ/T hybrid cryptographic requirements for quantum-ready deployments. The Automatic Certificate Management Environment (ACME) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) to authenticate client request payloads. Current ACME deployments rely on traditional public-key algorithms in both JWS and TLS, which are vulnerable to attacks from Cryptographically Relevant Quantum Computers (CRQCs). This specification defines PQC or PQ/T Hybrid TLS 1.3 key establishment and specify PQC or PQ/T authentication mechanisms for JWS and TLS where defined by the quantum ready ACME mechanism. This specification enables ACME clients and servers to achieve quantum-resistant confidentiality and authentication.
+This document updates RFC 8555 (ACME) to specify post-quantum and PQ/T hybrid cryptographic requirements for quantum-ready deployments. The Automatic Certificate Management Environment (ACME) automates certificate issuance, validation, and management over HTTPS using JSON Web Signatures (JWS) to authenticate client request payloads. Current ACME deployments rely on traditional public-key algorithms in both JWS and TLS, which are vulnerable to attacks from Cryptographically Relevant Quantum Computers (CRQCs). This specification defines PQC or PQ/T hybrid TLS 1.3 key establishment and specifies PQC or PQ/T authentication mechanisms for JWS and TLS under the quantum-ready ACME mechanism. This specification enables ACME clients and servers to achieve quantum-resistant confidentiality and authentication.
 
 --- middle
 
@@ -110,11 +110,11 @@ Selection of a Quantum-Ready Mechanism is a matter of deployment policy.
 
 In ACME, clients may transmit personally identifiable information (PII) such as email addresses and other account-related metadata when creating or managing an account. The confidentiality of this information relies on the security of the TLS 1.3 {{RFC8446}} channel, which protects ACME exchanges from passive observation during transmission.
 
-ACME deployments operating under a quantum-ready mechanism MUST use TLS 1.3 {{RFC8446}}, or a later version of TLS, for all ACME message exchanges; earlier versions of TLS MUST NOT be used. Post-quantum and PQ/T hybrid key exchange for TLS is defined only for TLS 1.3, so this requirement is a prerequisite for the key-establishment protections specified below.
+ACME deployments operating under a quantum-ready mechanism MUST use TLS 1.3 {{RFC8446}}, or a later version of TLS, for all ACME message exchanges; earlier versions of TLS MUST NOT be used. Post-quantum and PQ/T hybrid key exchange for TLS is defined only for TLS 1.3, so this requirement is a prerequisite for the key-establishment protections described below.
 
 One of the primary threats to TLS in ACME is the Harvest-Now, Decrypt-Later (HNDL) attack. In this scenario, an adversary passively records encrypted TLS traffic, such as ACME account creation or order requests, and stores it for future decryption once Cryptographically Relevant Quantum Computers (CRQCs) become available. CRQCs can break the traditional public-key algorithms (e.g., RSA, ECDH) used in TLS handshakes to establish session keys, exposing sensitive PII contained within ACME messages.
 
-To protect against HNDL, ACME deployments operating under a quantum-ready mechanism will have to adopt post-quantum or PQ/T hybrid key exchange mechanisms for all TLS connections, as outlined in Section 4 of {{I-D.ietf-uta-pqc-app}}. These mechanisms ensure that recorded TLS sessions cannot be retrospectively decrypted.
+Protection against HNDL requires post-quantum or PQ/T hybrid key exchange for the TLS connection. The key exchange is established at the TLS layer, not by ACME; its post-quantum and PQ/T hybrid form is specified in Section 4 of {{I-D.ietf-uta-pqc-app}}. ACME deployments seeking quantum-ready confidentiality follow that guidance, which ensures that recorded TLS sessions cannot be retrospectively decrypted.
 
 # Quantum-Ready Authentication
 
@@ -126,61 +126,35 @@ For these reasons, this document provides support for post-quantum or PQ/T hybri
 
 ## TLS Server Authentication {#tls-server-authentication}
 
-Migration to post-quantum X.509 certificates is operationally complex due to
-the time required to establish new trust anchors, update validation
-infrastructure, and deploy new root certificates across clients. As noted in
-{{?I-D.reddy-pquip-pqc-signature-migration}}, these transitions require years
-of planning and must begin well before a CRQC is publicly known.
+Migration to post-quantum X.509 certificates is operationally complex due to the time required to establish new trust anchors, update validation infrastructure, and deploy new root certificates across clients. As noted in {{?I-D.reddy-pquip-pqc-signature-migration}}, these transitions require years of planning and must begin well before a CRQC is publicly known.
 
-For TLS server authentication, ACME servers operating under a quantum-ready mechanism:
-
-- SHALL support TLS server authentication using PQC-only or PQ/T hybrid
-  certificate signatures, following the authentication guidance of
-  {{I-D.ietf-uta-pqc-app}}.
-- SHALL continue to accept traditional-only certificate signatures during
-  an explicitly bounded transition period.
+For TLS server authentication, the certificate signature algorithms are governed by TLS and the issuing PKI, not by ACME. Post-quantum and PQ/T hybrid certificate authentication for TLS is addressed in {{I-D.ietf-uta-pqc-app}}. ACME deployments seeking quantum-ready server authentication follow that guidance.
 
 ## JWS Request Authentication {#jws-request-authentication}
 
-ACME request authentication relies on the integrity of JSON Web Signatures
-(JWS) {{RFC7515}}. While JWS signatures cannot be retroactively forged, an 
-adversary with a CRQC could forge them in real time to impersonate ACME clients 
-and submit fraudulent certificate requests. As with TLS authentication, the 
-risk that a CRQC may be available without public disclosure means that migration 
-must be underway before the threat materialises.
+ACME request authentication relies on the integrity of JSON Web Signatures (JWS) {{RFC7515}} produced with the client's account key. While JWS signatures cannot be retroactively forged, an adversary with a CRQC could forge them in real time to impersonate ACME clients and submit fraudulent certificate requests. As with TLS authentication, the risk that a CRQC may be available without public disclosure means that migration must be underway before the threat materialises.
 
 This document updates Section 6.2 of {{RFC8555}}.
 
-ACME servers that support quantum-ready mechanism and request signing will have to support the ML-DSA algorithms defined in {{RFC9964}}, the SLH-DSA algorithms defined in {{!I-D.ietf-cose-sphincs-plus}}, and the composite ML-DSA algorithms defined in {{!I-D.ietf-jose-pq-composite-sigs}}. ES256 remains mandatory-to-implement for backward compatibility during the transition period. ACME servers MAY accept traditional-only JWS signatures during an explicitly bounded transition period.
+ACME servers MAY support any JWS signature algorithm registered in the IANA "JSON Web Signature and Encryption Algorithms" registry {{RFC7518}}. These include the post-quantum and PQ/T hybrid algorithms defined in {{RFC9964}} (ML-DSA), {{!I-D.ietf-cose-sphincs-plus}} (SLH-DSA), and {{!I-D.ietf-jose-pq-composite-sigs}} (composite ML-DSA). This document does not mandate any particular algorithm or parameter set; selection is a matter of deployment and PKI policy.
 
-The JWS "alg" values named in this section are registered in the IANA "JSON
-Web Signature and Encryption Algorithms" registry established by {{RFC7518}}.
+RFC 8555 Section 6.2 requires an ACME server to implement the ES256 signature algorithm. This document updates that requirement: an ACME server MAY choose not to implement ES256, and MAY implement any signature algorithm registered in the JOSE registry instead. A server that still implements ES256 for backward compatibility with existing clients MAY accept traditional-only JWS signatures during a transition period of its choosing.
 
 # Security Considerations
 
 The security considerations outlined in {{?RFC9958}} must be carefully evaluated and taken into account.
 
-Post-quantum algorithms selected for standardization are relatively new, and their implementations are still in the early stages of maturity. This makes them more susceptible to implementation bugs compared to the well-established and extensively tested cryptographic algorithms currently in use. Furthermore, certain deployments may need to continue using traditional algorithms to meet regulatory requirements, such as Federal Information Processing Standard (FIPS) 140-3 {{FIPS-140-3}} or Payment Card Industry (PCI) compliance.
-Hybrid key exchange provides a practical and flexible solution, offering protection against "Harvest Now, Decrypt Later" attacks while ensuring resilience to potential catastrophic vulnerabilities in any single algorithm. This approach allows for a gradual transition to PQC, preserving the benefits of traditional cryptosystems without requiring their immediate replacement.
+Post-quantum algorithms selected for standardization are relatively new, and their implementations are still in the early stages of maturity. This makes them more susceptible to implementation bugs compared to the well-established and extensively tested cryptographic algorithms currently in use. Furthermore, certain deployments may need to continue using traditional algorithms to meet regulatory requirements, such as Federal Information Processing Standard (FIPS) 140-3 {{FIPS-140-3}} or Payment Card Industry (PCI) compliance. Hybrid key exchange provides a practical and flexible solution, offering protection against "Harvest Now, Decrypt Later" attacks while ensuring resilience to potential catastrophic vulnerabilities in any single algorithm. This approach allows for a gradual transition to PQC, preserving the benefits of traditional cryptosystems without requiring their immediate replacement.
 
-SLH-DSA signatures are substantially larger than ML-DSA or traditional
-signatures. ACME servers that accept SLH-DSA-authenticated JWS requests
-will have to account for the increased message size in request-size limits and
-resource provisioning, so that the larger signatures do not become a
-denial-of-service vector.
+SLH-DSA signatures are substantially larger than ML-DSA or traditional signatures. ACME servers that accept SLH-DSA-authenticated JWS requests will have to account for the increased message size in request-size limits and resource provisioning, so that the larger signatures do not become a denial-of-service vector.
 
 ## MITM Attacks with CRQC in ACME
 
 A MITM attack can occur if an adversary possesses a CRQC capable of breaking traditional public-key signature schemes. In such a scenario, the adversary can generate forged certificates and produce valid signatures, thereby impersonating a TLS peer (server or client). Consequently, the authentication guarantees of TLS have to be considered compromised when relying solely on traditional certificate-based authentication once a CRQC is available.
 
-The normative measures that mitigate this threat are specified in the mechanism
-sections of this document and are not restated here as independent
-requirements: The Quantum-Ready mechanism requires support for PQC-only or PQ/T hybrid authentication for both TLS server authentication ({{tls-server-authentication}}) and JWS request authentication ({{jws-request-authentication}}), and permits traditional-only authentication only during an explicitly bounded transition period.
+The normative measures that mitigate this threat are specified in the mechanism sections of this document and are not restated here as independent requirements: The Quantum-Ready mechanism requires support for PQC-only or PQ/T hybrid authentication for both TLS server authentication ({{tls-server-authentication}}) and JWS request authentication ({{jws-request-authentication}}), and permits traditional-only authentication only during an explicitly bounded transition period.
 
-Organizations operating PKI infrastructures are expected to define and implement a transition strategy
-toward issuing PQC or PQ/T hybrid certificates, phasing out certificates that
-rely exclusively on traditional cryptographic algorithms within a defined
-migration timeline as part of their quantum-readiness posture.
+Organizations operating PKI infrastructures are expected to define and implement a transition strategy toward issuing PQC or PQ/T hybrid certificates, phasing out certificates that rely exclusively on traditional cryptographic algorithms within a defined migration timeline as part of their quantum-readiness posture.
 
 # IANA Considerations
 
