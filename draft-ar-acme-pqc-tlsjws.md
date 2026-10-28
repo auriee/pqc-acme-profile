@@ -3,7 +3,7 @@ title: "Quantum-Ready ACME Mechanism"
 abbrev: "Quantum-Ready ACME Mechanism"
 category: std
 
-docname: draft-ar-acme-pqc-tlsjws-latest
+docname: draft-ar-acme-pqc-tlsjws-01
 submissiontype: IETF
 number:
 date:
